@@ -419,9 +419,9 @@ void ST7735S_Fill_display(int color)
   }
     
     
-}
+}     
+   
         
-
 }
     
 void ST7735S_Print_Char(int color, char C_char, uint8_t X_pos, uint8_t Y_pos, uint8_t Size)

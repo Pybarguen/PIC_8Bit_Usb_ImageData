@@ -70,36 +70,7 @@ void Get_USB_Data()
         return;
     }
         
-    /* If the user has pressed the button associated with this demo, then we
-     * are going to send a "Button Pressed" message to the terminal.
-     */
-//    if(BUTTON_IsPressed(BUTTON_DEVICE_CDC_BASIC_DEMO) == true)
-//    {
-//        /* Make sure that we only send the message once per button press and
-//         * not continuously as the button is held.
-//         */
-//        if(buttonPressed == false)
-//        {
-//            /* Make sure that the CDC driver is ready for a transmission.
-//             */
-//            if(mUSBUSARTIsTxTrfReady() == true)
-//            {
-//                putrsUSBUSART(buttonMessage);
-//                buttonPressed = true;
-//            }
-//        }
-//    }
-//    else
-//    {
-//        /* If the button is released, we can then allow a new message to be
-//         * sent the next time the button is pressed.
-//         */
-//        buttonPressed = false;
-//    }
-
-    /* Check to see if there is a transmission in progress, if there isn't, then
-     * we can see about performing an echo response to data received.
-     */
+    
     if( USBUSARTIsTxTrfReady() == true)
     {
        
@@ -126,7 +97,7 @@ void Get_USB_Data()
                  * terminal program.
                  */
                 default:
-                    writeBuffer[i] = readBuffer[i] + 1;
+                    writeBuffer[i] = readBuffer[i];
                     break;
             }
         }
@@ -136,24 +107,31 @@ void Get_USB_Data()
             /* After processing all of the received data, we need to send out
              * the "echo" data now.
              */
-            putUSBUSART(writeBuffer,numBytesRead);
+            ;;
+           // putUSBUSART(writeBuffer,numBytesRead);
         }
     }
 
     CDCTxService();
 }
 
-/*
+
 void Processing_Data(uint8_t Data[])
 {
     for(i=0; i<sizeof(Data); i++)
         {
-    
+         
+        if(Data[i]==36)
+        {
+            
+            ST7735S_Fill_display(GreenApple_Color); 
+        }
+        
               
     }
     
 }
-*/
+
 
 
 MAIN_RETURN main(void)
@@ -189,6 +167,7 @@ MAIN_RETURN main(void)
 
         //Application specific tasks
         Get_USB_Data();
+        Processing_Data(writeBuffer);
 
     }//end while
 }//end main
