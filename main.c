@@ -36,21 +36,25 @@ please contact mla_licensing@microchip.com
 static uint8_t readBuffer[CDC_DATA_OUT_EP_SIZE];
 static uint8_t writeBuffer[CDC_DATA_IN_EP_SIZE];
 uint8_t i;
-/********************************************************************
- * Function:        void main(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        Main program entry point.
- *
- * Note:            None
- *******************************************************************/
+
+void Processing_Data(uint8_t Data[])
+{
+    for(i=0; i<sizeof(Data); i++)
+        {
+         
+        if(Data[i]==36)
+        {
+            
+            ST7735S_Fill_display(GreenApple_Color); 
+            putUSBUSART(writeBuffer,2);
+        }
+        
+              
+    }
+    
+}
+
+
 void Get_USB_Data()
 {
     /* If the USB device isn't configured yet, we can't really do anything
@@ -77,7 +81,8 @@ void Get_USB_Data()
         uint8_t numBytesRead;
 
         numBytesRead = getsUSBUSART(readBuffer, sizeof(readBuffer));
-
+       if(numBytesRead > 0)
+       {
         /* For every byte that was read... */
         for(i=0; i<numBytesRead; i++)
         {
@@ -88,7 +93,8 @@ void Get_USB_Data()
                  */
                 case 0x0A:
                 case 0x0D:
-                    writeBuffer[i] = readBuffer[i];
+                    writeBuffer[0] = 79;
+                    writeBuffer[1] = 107;
                     break;
 
                 /* If we receive something else, then echo it plus one
@@ -97,40 +103,31 @@ void Get_USB_Data()
                  * terminal program.
                  */
                 default:
-                    writeBuffer[i] = readBuffer[i];
+                   //writeBuffer[i] = readBuffer[i];
                     break;
             }
         }
-
-        if(numBytesRead > 0)
-        {
-            /* After processing all of the received data, we need to send out
-             * the "echo" data now.
-             */
-            ;;
-           // putUSBUSART(writeBuffer,numBytesRead);
-        }
-    }
-
-    CDCTxService();
-}
-
-
-void Processing_Data(uint8_t Data[])
-{
-    for(i=0; i<sizeof(Data); i++)
-        {
-         
-        if(Data[i]==36)
-        {
-            
-            ST7735S_Fill_display(GreenApple_Color); 
-        }
         
-              
+        Processing_Data(readBuffer);
+       }
+        
+//        if(numBytesRead > 0)
+//        {
+//            /* After processing all of the received data, we need to send out
+//             * the "echo" data now.
+//             */
+//            ;;
+//           // putUSBUSART(writeBuffer,numBytesRead);
+//        }
+    
     }
+      
+    CDCTxService();
     
 }
+
+
+
 
 
 
@@ -167,8 +164,8 @@ MAIN_RETURN main(void)
 
         //Application specific tasks
         Get_USB_Data();
-        Processing_Data(writeBuffer);
-
+        
+        
     }//end while
 }//end main
 
