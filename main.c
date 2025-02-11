@@ -35,8 +35,14 @@ please contact mla_licensing@microchip.com
 
 static uint8_t readBuffer[CDC_DATA_OUT_EP_SIZE];
 static uint8_t writeBuffer[CDC_DATA_IN_EP_SIZE];
+
+
 uint8_t i;
 
+
+                    
+
+                    
 void Processing_Data(uint8_t Data[])
 {
     for(i=0; i<sizeof(Data); i++)
@@ -46,11 +52,27 @@ void Processing_Data(uint8_t Data[])
         {
             
             ST7735S_Fill_display(GreenApple_Color); 
-            putUSBUSART(writeBuffer,2);
+            
+                    
+               
+            
+             
         }
+        
+         int tg;
+     for(tg=0; tg<10; tg++)
+            {
+                    
+                    ST7735S_Print_String(Purple_Color, "h", 0, (1*tg), 1);
+                    putUSBUSART(writeBuffer,3);
+                    CDCTxService();
+                    
+            }
         
               
     }
+    
+   
     
 }
 
@@ -92,9 +114,14 @@ void Get_USB_Data()
                  * them direct.
                  */
                 case 0x0A:
-                case 0x0D:
-                    writeBuffer[0] = 79;
-                    writeBuffer[1] = 107;
+                case 0x0D:    
+                        
+                    
+                    
+                    
+                    
+                    
+                    
                     break;
 
                 /* If we receive something else, then echo it plus one
@@ -138,6 +165,13 @@ MAIN_RETURN main(void)
     USBDeviceInit();
     USBDeviceAttach();
     
+    writeBuffer[0] = 79;
+                    writeBuffer[1] = 107;
+                    writeBuffer[2] = 10;
+                    writeBuffer[3] = 13;
+                    
+    
+    
     //SPI
    Spi_init();//start spi interface
    Spi_mode(CPOL_1_CPHA_0);//SPI mode 0 0 
@@ -153,6 +187,8 @@ MAIN_RETURN main(void)
    
    ST7735S_Init(ST7735_128_x_160);
     ST7735S_Fill_display(Black_Color); 
+   
+                 
     
     while(1)
     {
