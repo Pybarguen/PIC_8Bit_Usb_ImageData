@@ -21,7 +21,7 @@ please contact mla_licensing@microchip.com
 #define RES LATBbits.LATB4
 /** INCLUDES *******************************************************/
 #include "system.h"
-
+#include <stdio.h>
 #include "app_device_cdc_basic.h"
 #include "app_led_usb_status.h"
 
@@ -38,39 +38,99 @@ static uint8_t writeBuffer[CDC_DATA_IN_EP_SIZE];
 
 
 uint8_t i;
-
+uint8_t numBytesRead;
 
                     
 
                     
 void Processing_Data(uint8_t Data[])
 {
-    for(i=0; i<sizeof(Data); i++)
-        {
+    
          
-        if(Data[i]==36)
+         //Clear Display Command, String = clc
+        if(Data[0]==99 && Data[1]==108 && Data[2]==99)
         {
             
-            ST7735S_Fill_display(GreenApple_Color); 
-            
+            ST7735S_Fill_display(Black_Color);            
+            putUSBUSART(writeBuffer,3);
+            CDCTxService();
                     
                
             
              
         }
         
-         int tg;
-     for(tg=0; tg<10; tg++)
+        if(Data[0]==112 && Data[1]==105 && Data[2]==103)
+        {
+            
+            ST7735S_Fill_display(White_Color);            
+            putUSBUSART(writeBuffer,3);
+            CDCTxService();
+            Set_Display_Cursor(0, 0, 127, 159);
+            
+            while(readBuffer[0]!=100)
             {
-                    
-                    ST7735S_Print_String(Purple_Color, "h", 0, (1*tg), 1);
-                    putUSBUSART(writeBuffer,3);
+                
+                    writeBuffer[0] = 79;
+                    writeBuffer[1] = 79;
+                    writeBuffer[2] = 10;
+                    writeBuffer[3] = 13;
+                /* If the USB device isn't configured yet, we can't really do anything
+     * else since we don't have a host to talk to.  So jump back to the
+     * top of the while loop. */
+    if( USBGetDeviceState() < CONFIGURED_STATE )
+    {
+        return;
+    }
+
+    /* If we are currently suspended, then we need to see if we need to
+     * issue a remote wakeup.  In either case, we shouldn't process any
+     * keyboard commands since we aren't currently communicating to the host
+     * thus just continue back to the start of the while loop. */
+    if( USBIsDeviceSuspended()== true )
+    {
+        return;
+    }
+        
+    
+    if( USBUSARTIsTxTrfReady() == true)
+    {
+       
+        
+        int byte_control;
+        char value;
+        byte_control = getsUSBUSART(readBuffer, sizeof(readBuffer));
+       
+       if(byte_control > 0)
+       { 
+            
+            putUSBUSART(writeBuffer,3);
+             sprintf(value, "%d", byte_control);    
+            
+            for(i=0; i<=byte_control; i++)
+            {    
+             write_color(readBuffer[byte_control]);  
+             write_color(readBuffer[byte_control]);
+             
+            }
+             
+            
+            }
+               
+            
+             
+        }
+                   
                     CDCTxService();
-                    
             }
         
+                    
+                    
+                    
+            
+            } 
               
-    }
+    
     
    
     
@@ -100,40 +160,40 @@ void Get_USB_Data()
     if( USBUSARTIsTxTrfReady() == true)
     {
        
-        uint8_t numBytesRead;
+        
 
         numBytesRead = getsUSBUSART(readBuffer, sizeof(readBuffer));
        if(numBytesRead > 0)
        {
         /* For every byte that was read... */
-        for(i=0; i<numBytesRead; i++)
-        {
-            switch(readBuffer[i])
-            {
-                /* If we receive new line or line feed commands, just echo
-                 * them direct.
-                 */
-                case 0x0A:
-                case 0x0D:    
-                        
-                    
-                    
-                    
-                    
-                    
-                    
-                    break;
-
-                /* If we receive something else, then echo it plus one
-                 * so that if we receive 'a', we echo 'b' so that the
-                 * user knows that it isn't the echo enabled on their
-                 * terminal program.
-                 */
-                default:
-                   //writeBuffer[i] = readBuffer[i];
-                    break;
-            }
-        }
+//        for(i=0; i<numBytesRead; i++)
+//        {
+//            switch(readBuffer[i])
+//            {
+//                /* If we receive new line or line feed commands, just echo
+//                 * them direct.
+//                 */
+//                case 0x0A:
+//                case 0x0D:    
+//                        
+//                    
+//                    
+//                    
+//                    
+//                    
+//                    
+//                    break;
+//
+//                /* If we receive something else, then echo it plus one
+//                 * so that if we receive 'a', we echo 'b' so that the
+//                 * user knows that it isn't the echo enabled on their
+//                 * terminal program.
+//                 */
+//                default:
+//                   //writeBuffer[i] = readBuffer[i];
+//                    break;
+//            }
+//        }
         
         Processing_Data(readBuffer);
        }
