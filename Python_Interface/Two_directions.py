@@ -1,5 +1,6 @@
 import serial
-array = ['z'] * 64
+array = 'z' * 64
+array = array
 print(array)
 Serial_port = serial.Serial(port="COM6",baudrate=9600)
 a = 'pig'.encode('utf_8')
@@ -8,19 +9,24 @@ val = Serial_port.readline()  # read complete line from serial output
 val = val.decode()
 val = val.split()
 print(val)
+print(len(array))
 if(val[0]=="Ok"):
     val[0] = "WW"
-    for i in range(0, len(array)):
+    for i in range(0, 320):
         print(val[0])
-        val[0] = "WW"
-        a = array[i].encode('utf_8')
-        while(val[0]!="OO"):
-            print('hola señor')
-            Serial_port.write(a)  # write a string
-            val = Serial_port.readline()  # read complete line from serial output
-            val = val.decode()
-            val = val.split()
-            print(val)
+        a = array.encode('utf_8')
+        #while(val[0]!="OO"):
+        print('hola señor')
+        Serial_port.write(a)  # write a string
+        val = Serial_port.readline()  # read complete line from serial output
+        val = val.decode()
+        val = val.split()
+        print(i)
+
+
+
+
+
 
 
 

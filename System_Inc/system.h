@@ -23,7 +23,7 @@ please contact mla_licensing@microchip.com
 #include <xc.h>
 #define _XTAL_FREQ 48000000
 #include <stdbool.h>
-
+#include <stdio.h>
 //#include "buttons.h"
 #include "leds.h"
 

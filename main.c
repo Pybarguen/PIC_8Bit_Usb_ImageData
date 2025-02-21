@@ -21,7 +21,7 @@ please contact mla_licensing@microchip.com
 #define RES LATBbits.LATB4
 /** INCLUDES *******************************************************/
 #include "system.h"
-
+#include <stdio.h>
 #include "app_device_cdc_basic.h"
 #include "app_led_usb_status.h"
 
@@ -66,6 +66,7 @@ void Processing_Data(uint8_t Data[])
             ST7735S_Fill_display(White_Color);            
             putUSBUSART(writeBuffer,3);
             CDCTxService();
+            Set_Display_Cursor(0, 0, 127, 159);
             
             while(readBuffer[0]!=100)
             {
@@ -96,14 +97,22 @@ void Processing_Data(uint8_t Data[])
     {
        
         
-        uint8_t byte_control;
+        int byte_control;
+        char value;
         byte_control = getsUSBUSART(readBuffer, sizeof(readBuffer));
        
        if(byte_control > 0)
        { 
             
             putUSBUSART(writeBuffer,3);
-           
+             sprintf(value, "%d", byte_control);    
+            
+            for(i=0; i<=byte_control; i++)
+            {    
+             write_color(readBuffer[byte_control]);  
+             write_color(readBuffer[byte_control]);
+             
+            }
              
             
             }
