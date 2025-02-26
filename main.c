@@ -33,7 +33,7 @@ please contact mla_licensing@microchip.com
 #include "Pic18f4550_spi.h"
 #include "ST7735.h"
 
-static uint8_t readBuffer[CDC_DATA_OUT_EP_SIZE];
+static  unsigned char readBuffer[CDC_DATA_OUT_EP_SIZE];
 static uint8_t writeBuffer[CDC_DATA_IN_EP_SIZE];
 
 
@@ -52,7 +52,7 @@ void Processing_Data(uint8_t Data[])
         {
             
             ST7735S_Fill_display(Black_Color);            
-            putUSBUSART(writeBuffer,3);
+            //putUSBUSART(writeBuffer,3);
             CDCTxService();
                     
                
@@ -60,21 +60,21 @@ void Processing_Data(uint8_t Data[])
              
         }
         
+        
+        
         if(Data[0]==112 && Data[1]==105 && Data[2]==103)
         {
             
-            ST7735S_Fill_display(White_Color);            
-            putUSBUSART(writeBuffer,3);
+            //ST7735S_Fill_display(White_Color);            
+            //putUSBUSART(writeBuffer,3);
+            Set_Display_Cursor(0, 0, 63, 91); 
             CDCTxService();
-            Set_Display_Cursor(0, 0, 127, 159);
             
-            while(readBuffer[0]!=100)
+            
+            while(readBuffer[0]!=99 || readBuffer[1]!=114)
             {
                 
-                    writeBuffer[0] = 79;
-                    writeBuffer[1] = 79;
-                    writeBuffer[2] = 10;
-                    writeBuffer[3] = 13;
+                
                 /* If the USB device isn't configured yet, we can't really do anything
      * else since we don't have a host to talk to.  So jump back to the
      * top of the while loop. */
@@ -104,15 +104,19 @@ void Processing_Data(uint8_t Data[])
        if(byte_control > 0)
        { 
             
-            putUSBUSART(writeBuffer,3);
-             sprintf(value, "%d", byte_control);    
-            
-            for(i=0; i<=byte_control; i++)
+           
+             sprintf(value, "%d", readBuffer[0]);    
+          
+           
+            for(i=0; i<byte_control; i++)
             {    
-             write_color(readBuffer[byte_control]);  
-             write_color(readBuffer[byte_control]);
+             write_color(readBuffer[i]);  
+            
              
             }
+             
+              putUSBUSART(writeBuffer,3);
+            CDCTxService();
              
             
             }
