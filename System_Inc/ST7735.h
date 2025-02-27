@@ -132,7 +132,7 @@ enum DISPLAY_MODEL{
 enum DISPLAY_MODEL TFT_MODEL;
 
 
-void write_color(int data)
+void write_color(uint8_t data)
 {
    
    
