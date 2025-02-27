@@ -53,7 +53,7 @@ void Processing_Data(uint8_t Data[])
             
             ST7735S_Fill_display(Black_Color);            
             //putUSBUSART(writeBuffer,3);
-            CDCTxService();
+           // CDCTxService();
                     
                
             
@@ -66,7 +66,7 @@ void Processing_Data(uint8_t Data[])
         {
             
             //ST7735S_Fill_display(White_Color);            
-            //putUSBUSART(writeBuffer,3);
+            putUSBUSART(writeBuffer,3);
             Set_Display_Cursor(0, 0, 63, 91); 
             CDCTxService();
             
@@ -100,14 +100,18 @@ void Processing_Data(uint8_t Data[])
         int byte_control;
         char value;
         byte_control = getsUSBUSART(readBuffer, sizeof(readBuffer));
-       
+        
+       if(Data[0]==115 && Data[1]==101 && Data[2]==116)
+       {
+           Set_Display_Cursor(0, 0, 63, 91); 
+            //CDCTxService();
+           
+       }
        if(byte_control > 0)
        { 
             
            
-             sprintf(value, "%d", readBuffer[0]);    
-          
-           
+            sprintf(value, "%d", readBuffer[0]);            
             for(i=0; i<byte_control; i++)
             {    
              write_color(readBuffer[i]);  
@@ -115,8 +119,7 @@ void Processing_Data(uint8_t Data[])
              
             }
              
-              putUSBUSART(writeBuffer,3);
-            CDCTxService();
+              
              
             
             }

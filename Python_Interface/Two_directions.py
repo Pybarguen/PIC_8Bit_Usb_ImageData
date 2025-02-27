@@ -78,40 +78,39 @@ Serial_port = serial.Serial(port="COM6",baudrate=9600, timeout=1, write_timeout=
 # x = Buffer_Data[0:63]
 # print("Termino")
 t = 0
-while(True):
-    for i in range(0, len(Image_data)):
-        Buffer_Data = []
-        x = []
-        a = 'pig'.encode('utf_8')
-        Serial_port.write(a)  # write a string
-        val = Serial_port.readline()  # read complete line from serial output
-        val = val.decode()
-        val = val.split()
-        for j in range(0, len(Image_data[i])):
-
-            decimal = Image_data[i][j]
-            high_byte = (decimal >> 8)
-            low_byte = (decimal & 255)
-            Buffer_Data.append(high_byte)
-            Buffer_Data.append(low_byte)
-        print(val)
-        c = 1
-        if (c==1):
-#            val[0] = "WW"
+a = 'pig'.encode('utf_8')
+Serial_port.write(a)  # write a string
+val = Serial_port.readline()  # read complete line from serial output
+val = val.decode()
+val = val.split()
+print(val)
+if(val[0]=="Ok"):
+    while (True):
+        for i in range(0, len(Image_data)):
+            Buffer_Data = []
+            x = []
             n = 0
             m = 64
-            print("Cumple")
+            for j in range(0, len(Image_data[i])):
+                decimal = Image_data[i][j]
+                high_byte = (decimal >> 8)
+                low_byte = (decimal & 255)
+                Buffer_Data.append(high_byte)
+                Buffer_Data.append(low_byte)
+            print(val)
             for k in range(0, 184):
                 print(" que pasa esto es {} esto es {}".format(i, k))
                 x = Buffer_Data[n:m]
+                print(x, "eso es x")
                 Serial_port.write(x)  # write a string
                 n = n + 64
                 m = m + 64
-                t = t+1
+                t = t + 1
                 print(t, "soy t")
-        a = 'cr'.encode('utf_8')
-        Serial_port.write(a)  # write a string
-        print("funciona")
+            # a = 'set'.encode('utf_8')
+            # Serial_port.write(a)  # write a string
+            # print("funciona")
+
 
 # while(True):
 #
