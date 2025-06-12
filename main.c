@@ -30,7 +30,7 @@ please contact mla_licensing@microchip.com
 #include "usb_device_cdc.h"
 
 #include "Fonts.h"
-#include "Pic18f4550_spi.h"
+#include "Spi_Interface.h"
 #include "ST7735.h"
 
 static  unsigned char readBuffer[CDC_DATA_OUT_EP_SIZE];
