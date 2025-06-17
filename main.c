@@ -16,9 +16,7 @@ limitations under the License.
 To request to license the code under the MLA license (www.microchip.com/mla_license), 
 please contact mla_licensing@microchip.com
 *******************************************************************************/
-#define CCS_ST7735 LATBbits.LATB2
-#define DCs  LATBbits.LATB3
-#define RES LATBbits.LATB4
+
 /** INCLUDES *******************************************************/
 #include "system.h"
 #include <stdio.h>
@@ -30,7 +28,7 @@ please contact mla_licensing@microchip.com
 #include "usb_device_cdc.h"
 
 #include "Fonts.h"
-#include "Spi_Interface.h"
+
 #include "ST7735.h"
 
 static  unsigned char readBuffer[CDC_DATA_OUT_EP_SIZE];
