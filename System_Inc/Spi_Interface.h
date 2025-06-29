@@ -66,7 +66,7 @@ void write_command(int command);
 
 
 void write_data(int data);
-
+void write_dummy();
 
 
 #endif	/* XC_HEADER_TEMPLATE_H */

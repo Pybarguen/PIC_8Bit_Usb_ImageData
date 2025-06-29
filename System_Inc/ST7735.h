@@ -31,7 +31,7 @@
 #ifndef ST7735_H
 #define	ST7735_H
  #define _XTAL_FREQ 48000000
-#include "Spi_Interface.h"
+#include <Spi_Interface.h>
 #include "Fonts.h"
 
 #define CCS_ST7735 LATBbits.LATB2

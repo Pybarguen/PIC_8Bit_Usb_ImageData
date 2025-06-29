@@ -130,3 +130,18 @@ void write_data(int data)
     
     
 }
+
+void write_dummy()
+{
+   
+    
+   
+    SSPBUF =  0X00;
+    while(SSPSTATbits.BF == 0);
+    while(PIR1bits.SSPIF == 0);
+    PIR1bits.SSPIF = 0;
+    
+     
+    
+    
+}

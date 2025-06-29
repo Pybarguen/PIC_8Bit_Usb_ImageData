@@ -19,6 +19,7 @@ please contact mla_licensing@microchip.com
 
 /** INCLUDES *******************************************************/
 #include "system.h"
+#include "Spi_Interface.h" 
 #include <stdio.h>
 #include "app_device_cdc_basic.h"
 #include "app_led_usb_status.h"
@@ -30,6 +31,7 @@ please contact mla_licensing@microchip.com
 #include "Fonts.h"
 
 #include "ST7735.h"
+#include "25Q16VJ_Flash_Memory.h"
 
 static  unsigned char readBuffer[CDC_DATA_OUT_EP_SIZE];
 static uint8_t writeBuffer[CDC_DATA_IN_EP_SIZE];
@@ -37,6 +39,7 @@ static uint8_t writeBuffer[CDC_DATA_IN_EP_SIZE];
 
 uint8_t i;
 uint8_t numBytesRead;
+
 
                     
 
@@ -225,6 +228,13 @@ void Get_USB_Data()
 
 MAIN_RETURN main(void)
 {
+      MemoryID test;
+      test.manufacturer = 0;
+      test.memory_type = 0;
+      test.capacity = 0;
+      char String_Buffer[];//Buffer to print char in the display
+      
+ 
     SYSTEM_Initialize(SYSTEM_STATE_USB_START);
 
     USBDeviceInit();
@@ -241,18 +251,29 @@ MAIN_RETURN main(void)
    Spi_init();//start spi interface
    Spi_mode(CPOL_1_CPHA_0);//SPI mode 0 0 
    Spi_clock_mode(SPI_MASTER_CLOCK_DIV_4);//SPI clock = FOSC/4 
-   TRISBbits.RB2 = 0;//SLAVE control PIN
+   TRISBbits.RB2 = 0;//SLAVE control PIN ST7735
+   TRISDbits.RD4 = 0;//SLAVE control PIN MEMORY
    TRISBbits.RB3 = 0;//output DC comman/data ST7735 control
    TRISBbits.RB4 = 0;//output DC comman/data ST7735 control
    
    __delay_ms(10);
     RES = 1;
-    CCS_ST7735 = 1; 
+    CCS_ST7735 = 1;
+    CCS_Memory = 1;
     DCs = 0;
    
    ST7735S_Init(ST7735_128_x_160);
     ST7735S_Fill_display(Black_Color); 
-   
+    
+    Read_Device_ID(&test);
+      sprintf(String_Buffer, "0x%02X", test.manufacturer);    
+     ST7735S_Print_String(Blue_Color, String_Buffer, 0, 0, 2);
+     
+     sprintf(String_Buffer, "0x%02X", test.memory_type);    
+     ST7735S_Print_String(Blue_Color, String_Buffer, 0, 20, 2);
+     
+          sprintf(String_Buffer, "0x%02X", test.capacity);    
+     ST7735S_Print_String(Blue_Color, String_Buffer, 0, 40, 2);
                  
     
     while(1)
@@ -264,8 +285,13 @@ MAIN_RETURN main(void)
         #endif
 
         //Application specific tasks
-        Get_USB_Data();
+        //Get_USB_Data();
+       
         
+   
+  
+
+         
         
     }//end while
 }//end main

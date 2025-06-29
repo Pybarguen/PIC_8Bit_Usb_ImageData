@@ -31,14 +31,14 @@
 #ifndef FLASH_25Q16VJ_MEMORY_H  
 #define FLASH_25Q16VJ_MEMORY_H
 
-#include <xc.h> // include processor files - each processor file is guarded.  
+#include <Spi_Interface.h>
 
 #define Write_enable 0x06
 #define Volatile_SR_Write_E 0x50
 #define Write_Disable 0x04
 #define PowerDown_ID 0xAB
 #define Device_ID 0x90
-
+#define JEDEC_ID 0x9F
 #define Read_data 0x03
 #define Fast_read 0x0B
 #define Page_Program 0x02
@@ -53,9 +53,18 @@
 #define Write_Status_Register2 0x31
 #define Read_Status_Register3 0x15
 #define Write_Status_Register3 0x11
+#define CCS_Memory LATDbits.LATD4
 
+typedef struct {
+    
+    uint8_t manufacturer;
+    uint8_t memory_type;
+    uint8_t capacity;
+}MemoryID;
 
+void Read_Device_ID(MemoryID *id);
 
+void Write_Page_Program();
 
 
 #endif	/* XC_HEADER_TEMPLATE_H */
