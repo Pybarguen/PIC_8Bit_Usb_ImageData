@@ -30,7 +30,7 @@
 // more than once.  
 #ifndef ST7735_H
 #define	ST7735_H
- #define _XTAL_FREQ 48000000
+
 #include <Spi_Interface.h>
 #include "Fonts.h"
 

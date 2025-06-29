@@ -18,6 +18,7 @@ please contact mla_licensing@microchip.com
 *******************************************************************************/
 
 /** INCLUDES *******************************************************/
+
 #include "system.h"
 #include "Spi_Interface.h" 
 #include <stdio.h>
@@ -39,6 +40,8 @@ static uint8_t writeBuffer[CDC_DATA_IN_EP_SIZE];
 
 uint8_t i;
 uint8_t numBytesRead;
+
+int date =0;
 
 
                     
@@ -264,16 +267,27 @@ MAIN_RETURN main(void)
    
    ST7735S_Init(ST7735_128_x_160);
     ST7735S_Fill_display(Black_Color); 
-    
+
     Read_Device_ID(&test);
-      sprintf(String_Buffer, "0x%02X", test.manufacturer);    
+    Sector_erase();
+     Write_Page_Program();
+     Read_Address(&date);
+
+         
+          sprintf(String_Buffer, "0x%02X", test.manufacturer);    
      ST7735S_Print_String(Blue_Color, String_Buffer, 0, 0, 2);
      
-     sprintf(String_Buffer, "0x%02X", test.memory_type);    
-     ST7735S_Print_String(Blue_Color, String_Buffer, 0, 20, 2);
-     
-          sprintf(String_Buffer, "0x%02X", test.capacity);    
-     ST7735S_Print_String(Blue_Color, String_Buffer, 0, 40, 2);
+      sprintf(String_Buffer, "%d", date);  
+      ST7735S_Print_String(Blue_Color, String_Buffer, 0, 40, 2);
+      
+       sprintf(String_Buffer, "hola");  
+      ST7735S_Print_String(Blue_Color, String_Buffer, 0, 60, 2);
+//     ST7735S_Print_String(Blue_Color, String_Buffer, 0, 20, 2);
+//     sprintf(String_Buffer, "0x%02X", test.memory_type);    
+//     ST7735S_Print_String(Blue_Color, String_Buffer, 0, 20, 2);
+//     
+//          sprintf(String_Buffer, "0x%02X", test.capacity);    
+//     ST7735S_Print_String(Blue_Color, String_Buffer, 0, 40, 2);
                  
     
     while(1)

@@ -62,9 +62,24 @@ typedef struct {
     uint8_t capacity;
 }MemoryID;
 
+typedef union {
+   uint32_t address; 
+   struct {
+       uint8_t low_byte;
+       uint8_t mid_byte;
+       uint8_t high_byte;
+   };
+}AddressBytes;
+
+
 void Read_Device_ID(MemoryID *id);
 
 void Write_Page_Program();
+
+void Read_Address(int *address);
+
+void Sector_erase();
+
 
 
 #endif	/* XC_HEADER_TEMPLATE_H */

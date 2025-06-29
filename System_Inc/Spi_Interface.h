@@ -31,7 +31,7 @@
 #ifndef SPI_INTERFACE_H
 #define	SPI_INTERFACE_H
  
-
+#define _XTAL_FREQ 48000000
 /*SPI modes you can see how the SPI modes work here
  https://en.wikipedia.org/wiki/Serial_Peripheral_Interface*/
 enum SPI_MODES{
