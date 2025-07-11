@@ -41,6 +41,24 @@ void Read_Device_ID(MemoryID *id)
 }
 
 
+void Memory_state()
+{
+   
+
+   
+    
+    do{
+     
+        write_command(Read_Status_Register1);
+    
+    Busy_state_memory = (SSPBUF & 0x01); 
+        
+    }while(Busy_state_memory==1);
+   
+
+}
+
+
 void Write_Page_Program()
 {
     AddressMemory.address = 0x00000000;
@@ -57,7 +75,8 @@ void Write_Page_Program()
     write_command(AddressMemory.high_byte);
     write_command(AddressMemory.mid_byte);
     write_command(AddressMemory.low_byte);        
-     write_data(0xF0);
+     write_data(0x05);
+     Memory_state();
      CCS_Memory = 1;
      
         __delay_ms(10);
@@ -114,9 +133,9 @@ void Sector_erase()
      write_command(AddressMemory.high_byte);
     write_command(AddressMemory.mid_byte);
     write_command(AddressMemory.low_byte);  
-   
+   Memory_state();
     CCS_Memory = 1;
-      __delay_ms(700);
+      
     
 }
 

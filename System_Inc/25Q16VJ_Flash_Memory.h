@@ -32,6 +32,7 @@
 #define FLASH_25Q16VJ_MEMORY_H
 
 #include <Spi_Interface.h>
+uint8_t Busy_state_memory;
 
 #define Write_enable 0x06
 #define Volatile_SR_Write_E 0x50

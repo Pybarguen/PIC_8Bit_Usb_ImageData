@@ -115,7 +115,7 @@ void Processing_Data(uint8_t Data[])
        { 
             
            
-            sprintf(value, "%d", readBuffer[0]);            
+                      
             for(i=0; i<byte_control; i++)
             {    
              write_color(readBuffer[i]);  
@@ -299,7 +299,7 @@ MAIN_RETURN main(void)
         #endif
 
         //Application specific tasks
-        //Get_USB_Data();
+        Get_USB_Data();
        
         
    
