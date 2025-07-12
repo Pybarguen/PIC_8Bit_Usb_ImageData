@@ -41,7 +41,7 @@ static uint8_t writeBuffer[CDC_DATA_IN_EP_SIZE];
 uint8_t i;
 uint8_t numBytesRead;
 
-int date =0;
+int date =240;
 
 
                     
@@ -267,10 +267,12 @@ MAIN_RETURN main(void)
    
    ST7735S_Init(ST7735_128_x_160);
     ST7735S_Fill_display(Black_Color); 
-
+    CCS_ST7735 = 1;
+   __delay_ms(10);
+   
     Read_Device_ID(&test);
-    Sector_erase();
-     Write_Page_Program();
+   // Sector_erase();
+     //Write_Page_Program(0, 256);
      Read_Address(&date);
 
          

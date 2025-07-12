@@ -75,7 +75,7 @@ typedef union {
 
 void Read_Device_ID(MemoryID *id);
 
-void Write_Page_Program();
+void Write_Page_Program(uint32_t Page_write, int size_data);
 
 void Read_Address(int *address);
 

@@ -46,22 +46,22 @@ void Memory_state()
    
 
    
-    
+    CCS_Memory = 0;
     do{
      
         write_command(Read_Status_Register1);
-    
+       write_dummy();
     Busy_state_memory = (SSPBUF & 0x01); 
         
     }while(Busy_state_memory==1);
-   
+   CCS_Memory = 1;
 
 }
 
 
-void Write_Page_Program()
+void Write_Page_Program(uint32_t Page_write, int size_data)
 {
-    AddressMemory.address = 0x00000000;
+    AddressMemory.address = Page_write;
     
     
     CCS_Memory = 0;
@@ -74,17 +74,18 @@ void Write_Page_Program()
     write_command(Page_Program);//0x02
     write_command(AddressMemory.high_byte);
     write_command(AddressMemory.mid_byte);
-    write_command(AddressMemory.low_byte);        
-     write_data(0x05);
-     Memory_state();
+    write_command(AddressMemory.low_byte); 
+    for(int writer=0; writer<=size_data; writer++)
+    {
+     write_data(0xE0);    
+    }
      CCS_Memory = 1;
+     
+      Memory_state();
      
         __delay_ms(10);
         
- 
-    
-    
-    
+     
 }
     
     
@@ -119,23 +120,24 @@ void Read_Address(int *value)
 
 void Sector_erase()
 {
-     CCS_Memory = 0;
+    CCS_Memory = 0;
     write_command(Write_enable);//0x06 command
-     CCS_Memory = 1;
+    CCS_Memory = 1;
      
     __delay_us(1);
     
     
     
-     AddressMemory.address = 0x000000;
+    AddressMemory.address = 0x000000;
     CCS_Memory = 0;
     write_command(Sector_Erase_4Kb);
-     write_command(AddressMemory.high_byte);
+    write_command(AddressMemory.high_byte);
     write_command(AddressMemory.mid_byte);
     write_command(AddressMemory.low_byte);  
-   Memory_state();
+   
     CCS_Memory = 1;
-      
+    Memory_state();
+    __delay_ms(900);
     
 }
 
