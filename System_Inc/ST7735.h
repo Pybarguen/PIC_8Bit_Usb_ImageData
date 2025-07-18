@@ -30,7 +30,7 @@
 // more than once.  
 #ifndef ST7735_H
 #define	ST7735_H
- #define _XTAL_FREQ 48000000
+
 #include <Spi_Interface.h>
 #include "Fonts.h"
 
@@ -91,14 +91,13 @@ void write_color(uint8_t data);
 void ST7735_128_x_160_init();
 void ST7735S_Init(enum DISPLAY_MODEL data);
 void Set_Display_Cursor(uint8_t X_s, uint8_t Y_s, uint8_t X_end, uint8_t Y_end);
-
 void Set_Color(int Temp_Color);
-
 void ST7735S_Fill_display(int color);
 void ST7735S_Print_Char(int color, char C_char, uint8_t X_pos, uint8_t Y_pos, uint8_t Size);
 void ST7735S_Print_String(int color, char text[], uint8_t X_posa, uint8_t Y_pos, uint8_t Size);
 void ST7735S_Fill_image(int Image_arr[]);
 void ST7735S_Fill_image(int Image_arr[]);
+
 #ifdef St7735_Widgets
 
 

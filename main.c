@@ -18,6 +18,7 @@ please contact mla_licensing@microchip.com
 *******************************************************************************/
 
 /** INCLUDES *******************************************************/
+
 #include "system.h"
 #include "Spi_Interface.h" 
 #include <stdio.h>
@@ -32,13 +33,16 @@ please contact mla_licensing@microchip.com
 
 #include "ST7735.h"
 #include "25Q16VJ_Flash_Memory.h"
+AddressBytes AddressMemory;
 
 static  unsigned char readBuffer[CDC_DATA_OUT_EP_SIZE];
 static uint8_t writeBuffer[CDC_DATA_IN_EP_SIZE];
-
+uint8_t memory_buffer[256];
 
 uint8_t i;
 uint8_t numBytesRead;
+
+int date =0;
 
 
                     
@@ -66,7 +70,7 @@ void Processing_Data(uint8_t Data[])
         if(Data[0]==112 && Data[1]==105 && Data[2]==103)
         {
             
-            //ST7735S_Fill_display(White_Color);            
+            ST7735S_Fill_display(White_Color);            
             putUSBUSART(writeBuffer,3);
             Set_Display_Cursor(0, 0, 63, 91); 
             CDCTxService();
@@ -102,17 +106,12 @@ void Processing_Data(uint8_t Data[])
         char value;
         byte_control = getsUSBUSART(readBuffer, sizeof(readBuffer));
         
-       if(Data[0]==115 && Data[1]==101 && Data[2]==116)
-       {
-           Set_Display_Cursor(0, 0, 63, 91); 
-            //CDCTxService();
-           
-       }
+      
        if(byte_control > 0)
        { 
             
            
-            sprintf(value, "%d", readBuffer[0]);            
+                      
             for(i=0; i<byte_control; i++)
             {    
              write_color(readBuffer[i]);  
@@ -264,18 +263,43 @@ MAIN_RETURN main(void)
    
    ST7735S_Init(ST7735_128_x_160);
     ST7735S_Fill_display(Black_Color); 
-    
+    CCS_ST7735 = 1;
+   __delay_ms(10);
+   
     Read_Device_ID(&test);
-      sprintf(String_Buffer, "0x%02X", test.manufacturer);    
+    AddressMemory.address = 0x000000;
+    Sector_erase_4kb(AddressMemory);
+     Write_Page_Program(AddressMemory, 256);
+     Read_Address(AddressMemory, &date);
+     Read_Page(AddressMemory, memory_buffer);
+       
+
+         
+          sprintf(String_Buffer, "0x%02X", test.manufacturer);    
      ST7735S_Print_String(Blue_Color, String_Buffer, 0, 0, 2);
      
-     sprintf(String_Buffer, "0x%02X", test.memory_type);    
-     ST7735S_Print_String(Blue_Color, String_Buffer, 0, 20, 2);
+      sprintf(String_Buffer, "%d", date);  
+      ST7735S_Print_String(Blue_Color, String_Buffer, 0, 40, 2);
+      
+       sprintf(String_Buffer, "hola");  
+      ST7735S_Print_String(Blue_Color, String_Buffer, 0, 60, 2);
+      
+      
+//           __delay_ms(1000);   
+//                  __delay_ms(1000);  
+//     ST7735S_Fill_display(Black_Color); 
+//     Set_Display_Cursor(0, 0, 15, 15); 
+//     for(i=0; i<=256; i++)
+//            {    
+//             write_color(memory_buffer[i]);  
+//            
+//             
+//            }
+   
+      CCS_ST7735 = 1;
+    CCS_Memory = 1;
      
-          sprintf(String_Buffer, "0x%02X", test.capacity);    
-     ST7735S_Print_String(Blue_Color, String_Buffer, 0, 40, 2);
-                 
-    
+
     while(1)
     {
         SYSTEM_Tasks();
@@ -285,7 +309,7 @@ MAIN_RETURN main(void)
         #endif
 
         //Application specific tasks
-        //Get_USB_Data();
+        Get_USB_Data();
        
         
    
