@@ -4,137 +4,76 @@ import time
 
 
 Serial_port = serial.Serial(port="COM6",baudrate=9600, timeout=1, write_timeout=2)
-# a = 'pig'.encode('utf_8')
-#
-# Serial_port.write(a)  # write a string
-# val = Serial_port.readline()  # read complete line from serial output
-# val = val.decode()
-# val = val.split()
-# print(len(img1), "imagen len")
-# test_matrix_color = ['0x4a69']*4096
-# Buffer_Data = []
-#
-#
-#
-#
-#
-#
-# for i in range(0, len(img1)):
-#     decimal = img1[i]
-#     high_byte = (decimal>>8)
-#     low_byte = (decimal & 255)
-#     Buffer_Data.append(high_byte)
-#     Buffer_Data.append(low_byte)
-#
-# x = Buffer_Data[0:63]
-# print(x)
-#
-# print(val)
-# if(val[0]=="Ok"):
-#     val[0] = "WW"
-#     n = 0
-#     m = 64
-#     for j in range(0, 194):
-#         x = Buffer_Data[n:m]
-#         Serial_port.write(x)  # write a string
-#         n = n+64
-#         m = m+64
-#
-# print("que pasa")
-# a = 'cr'.encode('utf_8')
-# Serial_port.write(a)  # write a string
-# print("funciona")
-# a = 'pig'.encode('utf_8')
-# Serial_port.write(a)  # write a string
-# val = Serial_port.readline()  # read complete line from serial output
-# val = val.decode()
-# val = val.split()
-# print(val, "ultimo valor")
-#
-#
-#
-# Buffer_Data = []
-# for i in range(0, len(img2)):
-#     decimal = img2[i]
-#     high_byte = (decimal>>8)
-#     low_byte = (decimal & 255)
-#     Buffer_Data.append(high_byte)
-#     Buffer_Data.append(low_byte)
-#
-#
-# if(val[0]=="Ok"):
-#     val[0] = "WW"
-#     n = 0
-#     m = 64
-#     print("Cumple")
-#     for j in range(0, 194):
-#         # while(val[0]!="OO"):
-#         #Serial_port.write(bytes([Buffer_Data[i]]))  # write a string
-#         x = Buffer_Data[n:m]
-#         Serial_port.write(x)  # write a string
-#         n = n+64
-#         m = m+64
-#
-# x = Buffer_Data[0:63]
-# print("Termino")
-t = 0
-a = 'pig'.encode('utf_8')
-Serial_port.write(a)  # write a string
-val = Serial_port.readline()  # read complete line from serial output
-val = val.decode()
-val = val.split()
-print(val)
-if(val[0]=="Ok"):
+
+
+"""
+     Funcion Name : Write_animacion_data():
+     
+     Description : La función envía los datos por el puerto Serial emulado
+                  a través del USB del PIC18F4550. El ciclo for con la variable
+                  en 2 bloques de 1 byte cada uno; se debe hacer el proceso
+                  dos veces para enviar un color correcto.
+     
+
+     Returns None 
+
+"""
+def Write_animacion_data():
     while (True):
-        for i in range(0, len(Image_data)):
+        for i in range(0, len(Image_data)):#Hay 4 imagenes en el codigo de prueba
             Buffer_Data = []
             x = []
+            """Los datos se envian en bloques de 64bytes
+            por el puerto USB del PIC"""
             n = 0
             m = 64
-            for j in range(0, len(Image_data[i])):
+            for j in range(0, len(Image_data[i])):#Para cada imagen de la matrix se extrae los datos
                 decimal = Image_data[i][j]
+                """Se separan los bytes del color al ser de 16bit
+                se saca la parte alta y la parte baja """
                 high_byte = (decimal >> 8)
                 low_byte = (decimal & 255)
+                #Se agregan los datos al buffer
                 Buffer_Data.append(high_byte)
                 Buffer_Data.append(low_byte)
-            print(val)
+
+        #Se envia los datos por el puerto Serial.
             for k in range(0, 184):
-                print(" que pasa esto es {} esto es {}".format(i, k))
                 x = Buffer_Data[n:m]
-                print(x, "eso es x")
                 Serial_port.write(x)  # write a string
                 n = n + 64
                 m = m + 64
-                t = t + 1
-                print(t, "soy t")
-            # a = 'set'.encode('utf_8')
-            # Serial_port.write(a)  # write a string
-            # print("funciona")
 
+def Write_image_data():
+    Buffer_Data = []
+    x = []
+    """Los datos se envian en bloques de 64bytes
+    por el puerto USB del PIC"""
+    n = 0
+    m = 64
+    for j in range(0, len(Image_data[0])):  # Para cada imagen de la matrix se extrae los datos
+        decimal = Image_data[0][j]
+        """Se separan los bytes del color al ser de 16bit
+        se saca la parte alta y la parte baja """
+        high_byte = (decimal >> 8)
+        low_byte = (decimal & 255)
+        # Se agregan los datos al buffer
+        Buffer_Data.append(high_byte)
+        Buffer_Data.append(low_byte)
 
-# while(True):
-#
-#     val = Serial_port.readline()  # read complete line from serial output
-#     print(val)
-#     while not '\\n' in str(val):  # check if full data is received.
-#
-#         # This loop is entered only if serial read value doesn't contain \n
-#         # which indicates end of a sentence.
-#         # str(val) - val is byte where string operation to check `\\n`
-#         # can't be performed
-#
-#         temp = Serial_port.readline()  # check for serial output.
-#         if not not temp.decode():  # if temp is not empty.
-#             val = (val.decode() + temp.decode()).encode()
-#             # requrired to decode, sum, then encode because
-#             # long values might require multiple passes
-#     val = val.decode()  # decoding from bytes
-#     val = val.split()
-#     print(val)
+    for k in range(0, 184):
+        x = Buffer_Data[n:m]
+        Serial_port.write(x)  # write a string
+        n = n + 64
+        m = m + 64
 
+a = 'pig'.encode('utf_8')#Put Image Command
+Serial_port.write(a)  # write a string with the Put Command
+val = Serial_port.readline()  # read complete line from serial output
+val = val.decode()
+val = val.split()
 
+if(val[0]=="Ok"):#If the Microcontroller sent Ok Make the function
+    Write_image_data()
 
-
-
-                # stripping leading and trailing spaces.
 
