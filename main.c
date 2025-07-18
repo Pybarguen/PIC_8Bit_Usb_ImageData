@@ -70,7 +70,7 @@ void Processing_Data(uint8_t Data[])
         if(Data[0]==112 && Data[1]==105 && Data[2]==103)
         {
             
-            //ST7735S_Fill_display(White_Color);            
+            ST7735S_Fill_display(White_Color);            
             putUSBUSART(writeBuffer,3);
             Set_Display_Cursor(0, 0, 63, 91); 
             CDCTxService();
@@ -268,7 +268,7 @@ MAIN_RETURN main(void)
    
     Read_Device_ID(&test);
     AddressMemory.address = 0x000000;
-    Sector_erase(AddressMemory);
+    Sector_erase_4kb(AddressMemory);
      Write_Page_Program(AddressMemory, 256);
      Read_Address(AddressMemory, &date);
      Read_Page(AddressMemory, memory_buffer);
@@ -285,29 +285,32 @@ MAIN_RETURN main(void)
       ST7735S_Print_String(Blue_Color, String_Buffer, 0, 60, 2);
       
       
-           __delay_ms(1000);   
-                  __delay_ms(1000);  
-     ST7735S_Fill_display(Black_Color); 
-     Set_Display_Cursor(0, 0, 15, 15); 
-     for(i=0; i<=sizeof(memory_buffer); i++)
-            {    
-             write_color(memory_buffer[i]);  
-            
-             
-            }
+//           __delay_ms(1000);   
+//                  __delay_ms(1000);  
+//     ST7735S_Fill_display(Black_Color); 
+//     Set_Display_Cursor(0, 0, 15, 15); 
+//     for(i=0; i<=256; i++)
+//            {    
+//             write_color(memory_buffer[i]);  
+//            
+//             
+//            }
+   
+      CCS_ST7735 = 1;
+    CCS_Memory = 1;
      
 
     while(1)
     {
-//        SYSTEM_Tasks();
-//
-//        #if defined(USB_POLLING)
-//            
-//        #endif
-//
-//        //Application specific tasks
-//        Get_USB_Data();
-//       
+        SYSTEM_Tasks();
+
+        #if defined(USB_POLLING)
+            
+        #endif
+
+        //Application specific tasks
+        Get_USB_Data();
+       
         
    
   

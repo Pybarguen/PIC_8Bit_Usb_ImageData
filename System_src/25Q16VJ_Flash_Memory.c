@@ -136,7 +136,7 @@ void Read_Address(AddressBytes AddressMemory, int *value)
 
 
 
-void Sector_erase(AddressBytes AddressMemory)
+void Sector_erase_4kb(AddressBytes AddressMemory)
 {
     CCS_Memory = 0;
     write_command(Write_enable);//0x06 command

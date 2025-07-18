@@ -131,7 +131,7 @@ void Read_Page(AddressBytes AddressMemory, uint8_t Buffer[256]);
  * @param Struct AddressBytes ---   24Bit Addres to Respective Sector 
  * @return Nothing.
  */
-void Sector_erase(AddressBytes AddressMemory);
+void Sector_erase_4kb(AddressBytes AddressMemory);
 
 
 
