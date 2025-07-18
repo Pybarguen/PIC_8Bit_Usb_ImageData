@@ -21,9 +21,9 @@ please contact mla_licensing@microchip.com
 #define SYSTEM_H
 
 #include <xc.h>
-#define _XTAL_FREQ 48000000
-#include <stdbool.h>
 
+#include <stdbool.h>
+#include <stdio.h>
 //#include "buttons.h"
 #include "leds.h"
 
