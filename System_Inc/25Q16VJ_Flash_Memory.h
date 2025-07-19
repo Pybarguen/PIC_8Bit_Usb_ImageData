@@ -102,7 +102,7 @@ void Read_Device_ID(MemoryID *id);
  * @param Page_Write Address and Size of data to Write
  * @return Nothing.
  */
-void Write_Page_Program(AddressBytes AddressMemory, int size_data);
+void Write_Page_Program(AddressBytes AddressMemory, int size_data, char Buffer[256]);
 
 /**
  * Funtion Read_Address(int *address)
@@ -134,6 +134,12 @@ void Read_Page(AddressBytes AddressMemory, uint8_t Buffer[256]);
 void Sector_erase_4kb(AddressBytes AddressMemory);
 
 
+void Block_Erase_64KB(AddressBytes AddressMemory);
+
+
+void set_page(AddressBytes AddressMemory);
+
+void write_memory_data(uint8_t data);
 
 #endif	/* XC_HEADER_TEMPLATE_H */
 

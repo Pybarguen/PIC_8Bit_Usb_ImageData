@@ -66,6 +66,7 @@ def Write_image_data():
         Serial_port.write(x)  # write a string
         n = n + 64
         m = m + 64
+        print(k)
 
 a = 'pig'.encode('utf_8')#Put Image Command
 Serial_port.write(a)  # write a string with the Put Command
