@@ -60,7 +60,7 @@ void Memory_state()
 }
 
 
-void Write_Page_Program(AddressBytes AddressMemory, int size_data)
+void Write_Page_Program(AddressBytes AddressMemory, int size_data, uint8_t Buffer[256])
 {
 
     
@@ -76,15 +76,16 @@ void Write_Page_Program(AddressBytes AddressMemory, int size_data)
     write_command(AddressMemory.high_byte);
     write_command(AddressMemory.mid_byte);
     write_command(AddressMemory.low_byte); 
-    for(int writer=0; writer<size_data; writer++)
+    
+    for(int writer=0; writer<PAGE_SIZE; writer++)
     {
-     write_data(0xFF);    
+         write_data(Buffer[writer]); 
     }
      CCS_Memory = 1;
      
       Memory_state();
      
-        __delay_ms(10);
+        __delay_ms(20);
         
      
 }
@@ -96,8 +97,11 @@ void Read_Page(AddressBytes AddressMemory, uint8_t Buffer[256])
     CCS_Memory = 0;
     write_command(Read_data);
      write_command(AddressMemory.high_byte);
+        __delay_us(3);
     write_command(AddressMemory.mid_byte);
+       __delay_us(3);
     write_command(AddressMemory.low_byte);
+       __delay_us(3);
     for(int reader=0; reader<PAGE_SIZE; reader++)
     {
         
@@ -108,7 +112,7 @@ void Read_Page(AddressBytes AddressMemory, uint8_t Buffer[256])
     
     
     CCS_Memory = 1;
-    
+    __delay_ms(1);
     
     
 }
@@ -159,5 +163,57 @@ void Sector_erase_4kb(AddressBytes AddressMemory)
     
 }
 
+void Block_Erase_64KB(AddressBytes AddressMemory)
+{
+    CCS_Memory = 0;
+    write_command(Write_enable);//0x06 command
+    CCS_Memory = 1;
+     
+    __delay_us(1);
     
+    
+    
+
+    CCS_Memory = 0;
+    write_command(Block_Erase_64Kb);
+    write_command(AddressMemory.high_byte);
+    write_command(AddressMemory.mid_byte);
+    write_command(AddressMemory.low_byte);  
+   
+    CCS_Memory = 1;
+    Memory_state();
+    __delay_ms(900);
+    
+}
+
+void set_page(AddressBytes AddressMemory)
+
+{
+    
+    
+    CCS_Memory = 0;
+    write_command(Write_enable);//0x06 command
+     CCS_Memory = 1;
+     
+    __delay_us(1);
+    
+    CCS_Memory = 0;
+    write_command(Page_Program);//0x02
+    write_command(AddressMemory.high_byte);
+    write_command(AddressMemory.mid_byte);
+    write_command(AddressMemory.low_byte);
+    
+    
+}
+
+void write_memory_data(uint8_t data)
+
+{
+    
+    SSPBUF =  data;
+    while(SSPSTATbits.BF == 0);
+    while(PIR1bits.SSPIF == 0);
+    PIR1bits.SSPIF = 0;
+    
+}
     

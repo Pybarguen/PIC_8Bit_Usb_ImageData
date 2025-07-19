@@ -37,11 +37,11 @@ AddressBytes AddressMemory;
 
 static  unsigned char readBuffer[CDC_DATA_OUT_EP_SIZE];
 static uint8_t writeBuffer[CDC_DATA_IN_EP_SIZE];
-uint8_t memory_buffer[256];
+char memory_buffer[256];
 
 uint8_t i;
 uint8_t numBytesRead;
-
+uint8_t control_page =0;
 int date =0;
 
 
@@ -70,7 +70,8 @@ void Processing_Data(uint8_t Data[])
         if(Data[0]==112 && Data[1]==105 && Data[2]==103)
         {
             
-            ST7735S_Fill_display(White_Color);            
+            ST7735S_Fill_display(White_Color); 
+             CCS_ST7735 = 1;
             putUSBUSART(writeBuffer,3);
             Set_Display_Cursor(0, 0, 63, 91); 
             CDCTxService();
@@ -107,19 +108,33 @@ void Processing_Data(uint8_t Data[])
         byte_control = getsUSBUSART(readBuffer, sizeof(readBuffer));
         
       
-       if(byte_control > 0)
+       if(byte_control > 0 && byte_control==64)
        { 
             
            
-                      
+            if(control_page<4)   
+            {
             for(i=0; i<byte_control; i++)
-            {    
-             write_color(readBuffer[i]);  
-            
+            {  
+                CCS_ST7735 = 0;
+                 __delay_us(1);
+             write_color(readBuffer[i]);             
+               __delay_ms(1);
+             memory_buffer[(control_page * 64) + i] = readBuffer[i];
              
             }
+            control_page = control_page+1;
+            }
+            if(control_page==4)
+            {
+                CCS_ST7735 = 1;
+                 __delay_ms(1);
+                Write_Page_Program(AddressMemory, PAGE_SIZE, memory_buffer);
              
-              
+                CCS_Memory = 1;
+                 AddressMemory.address += 0x000100;
+                 control_page=0;
+            }
              
             
             }
@@ -142,6 +157,7 @@ void Processing_Data(uint8_t Data[])
    
     
 }
+
 
 
 void Get_USB_Data()
@@ -227,6 +243,8 @@ void Get_USB_Data()
 
 MAIN_RETURN main(void)
 {
+    
+     AddressMemory.address = 0x000000;
       MemoryID test;
       test.manufacturer = 0;
       test.memory_type = 0;
@@ -266,35 +284,55 @@ MAIN_RETURN main(void)
     CCS_ST7735 = 1;
    __delay_ms(10);
    
-    Read_Device_ID(&test);
-    AddressMemory.address = 0x000000;
-    Sector_erase_4kb(AddressMemory);
-     Write_Page_Program(AddressMemory, 256);
-     Read_Address(AddressMemory, &date);
-     Read_Page(AddressMemory, memory_buffer);
-       
-
-         
-          sprintf(String_Buffer, "0x%02X", test.manufacturer);    
-     ST7735S_Print_String(Blue_Color, String_Buffer, 0, 0, 2);
-     
-      sprintf(String_Buffer, "%d", date);  
-      ST7735S_Print_String(Blue_Color, String_Buffer, 0, 40, 2);
+  
+   
+//    Read_Device_ID(&test);
+ //  AddressMemory.address = 0x000000;
+ // Sector_erase_4kb(AddressMemory);
+//   Block_Erase_64KB(AddressMemory);
+     __delay_ms(900);
+//    Write_Page_Program(AddressMemory, 256);
+//    Read_Address(AddressMemory, &date);
+ //   Read_Page(AddressMemory, memory_buffer);
+//       
+//
+//         
+//          sprintf(String_Buffer, "0x%02X", test.manufacturer);    
+//     ST7735S_Print_String(Blue_Color, String_Buffer, 0, 0, 2);
+//     
+//      sprintf(String_Buffer, "%d", date);  
+//      ST7735S_Print_String(Blue_Color, String_Buffer, 0, 40, 2);
+//      
+//       sprintf(String_Buffer, "hola");  
+//      ST7735S_Print_String(Blue_Color, String_Buffer, 0, 60, 2);
       
-       sprintf(String_Buffer, "hola");  
-      ST7735S_Print_String(Blue_Color, String_Buffer, 0, 60, 2);
-      
-      
+//      
 //           __delay_ms(1000);   
 //                  __delay_ms(1000);  
-//     ST7735S_Fill_display(Black_Color); 
-//     Set_Display_Cursor(0, 0, 15, 15); 
-//     for(i=0; i<=256; i++)
-//            {    
-//             write_color(memory_buffer[i]);  
-//            
-//             
-//            }
+     ST7735S_Fill_display(White_Color); 
+     //Set_Display_Cursor(0, 0, 63, 91);  
+     Set_Display_Cursor(0, 0, 63, 91); 
+      
+     for(int mr=0; mr<46; mr++)
+     {
+          CCS_ST7735 = 1;
+           __delay_ms(1);
+         Read_Page(AddressMemory, memory_buffer);
+          CCS_ST7735 = 0;
+           __delay_ms(1);
+          
+     for(int mt=0; mt<256; mt++)
+            {
+           __delay_ms(10);
+             write_color(memory_buffer[mt]);  
+             
+             
+            }
+           
+           
+      AddressMemory.address += 0x000100;
+     
+    }
    
       CCS_ST7735 = 1;
     CCS_Memory = 1;
@@ -302,14 +340,14 @@ MAIN_RETURN main(void)
 
     while(1)
     {
-        SYSTEM_Tasks();
-
-        #if defined(USB_POLLING)
-            
-        #endif
-
-        //Application specific tasks
-        Get_USB_Data();
+//        SYSTEM_Tasks();
+//
+//        #if defined(USB_POLLING)
+//            
+//        #endif
+//
+//        //Application specific tasks
+//        Get_USB_Data();
        
         
    
