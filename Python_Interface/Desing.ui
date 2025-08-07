@@ -905,6 +905,15 @@ color: rgb(255, 255, 255);</string>
                 </property>
                 <item>
                  <widget class="QLabel" name="Serial_Informmation">
+                  <property name="font">
+                   <font>
+                    <family>Comic Sans MS</family>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">color: rgb(255, 255, 255);</string>
+                  </property>
                   <property name="text">
                    <string/>
                   </property>

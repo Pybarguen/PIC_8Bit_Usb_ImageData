@@ -2,10 +2,26 @@ import serial
 import time
 
 class Serial_data():
-    def __init__(self, Port):
-        self.Serial_port = serial.Serial(port=Port,
-                                         baudrate=230400,
-                                         timeout=0)
+    def __init__(self, Port, baudrate):
+        self.Port = str(Port)
+        self.Baudrate = baudrate
+        print(self.Port)
+
+
+    def Connect_Port(self):
+        try:
+            self.Serial_port = serial.Serial(port=self.Port,
+                                             baudrate=int(self.Baudrate),
+                                             timeout=0)
+            return "Connect", True
+            print("conectado")
+            print(self.Serial_port)
+        except:
+            return "No-Connect", False
+            print("no conectado")
+
+
+
     def Get_serial_data(self):
         try:  # runs this loop forever
 
