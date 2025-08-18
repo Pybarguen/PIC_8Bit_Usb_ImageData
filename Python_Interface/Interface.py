@@ -7,7 +7,7 @@ from PyQt5.QtCore import QTimer
 from PIL import Image
 from Serial_server import *
 import numpy as np
-
+import threading
 
 
 from Desing import *
@@ -28,15 +28,19 @@ class Program(QtWidgets.QMainWindow):
         self.Serial_state = None
         self.data = None
 
+        #Array para guardar las diferentes imagenes.
+        self.images = []
 
         self.Image_matrix = []
 
         # Temporizador para obtener los datos del puerto Serial
-        self.tiempo2 = QTimer()
-        self.tiempo2.setInterval(1)
-        self.tiempo2.timeout.connect(self.Get_Data)
+        #self.tiempo2 = QTimer()
+        #self.tiempo2.setInterval(1)
+        #self.tiempo2.timeout.connect(self.Get_Data)
         #___________________________________________________
 
+        self.thread_control = None
+        self.Run_thread = False
 
         """
         Configuracion de los WidGets ComboBox
@@ -111,12 +115,30 @@ class Program(QtWidgets.QMainWindow):
             r"C:/images/",
             "Images (*.png *.jpg)")
         if filenames:
+            for i in range(0, len(filenames)):
+                self.images.append(QPixmap(filenames[i]))
+            label_mapping = {
+                0: self.ui.Image1_Label,
+                1: self.ui.Image2_Label,
+                2: self.ui.Image3_Label,
+                3: self.ui.Image4_Label,
+                4: self.ui.Image5_Label,
+                5: self.ui.Image6_Label,
+            }
+            for idx, image in enumerate(self.images):
+                if idx in label_mapping:
+                    label_mapping[idx].setPixmap(image)
+                    label_mapping[idx].setScaledContents(True)
+            """
             mi_image = QPixmap(filenames[0])
             self.ui.Image1_Label.setScaledContents(True)
             self.ui.Image1_Label.setPixmap(mi_image)
             image = Image.open(filenames[0])
             pixeles = np.array(image)
             self.Pixel_Converter(pixeles)
+            
+            """
+            print(len(self.images))
 
     """
               Fin funcion importar imagenes
@@ -136,9 +158,10 @@ class Program(QtWidgets.QMainWindow):
 
     def Pixel_Converter(self, Pixels):
         alto, ancho, _ = Pixels.shape
-
-        for i in range(0, alto):
-            for j in range(0, ancho):
+        print(alto)
+        print(ancho)
+        for j in range(0, ancho):
+            for i in range(0, alto):
                 Red = int(Pixels[i, j, 0])
                 Green = int(Pixels[i, j, 1])
                 Blue = int(Pixels[i, j, 2])
@@ -146,12 +169,12 @@ class Program(QtWidgets.QMainWindow):
                 g_6_bits = (Green >> 2) & 0x3F
                 b_5_bits = (Blue >> 3) & 0x1F
 
-                print(Red, Green, Blue)
-                print("Red {} Green {}  Blue {}".format(r_5_bits, g_6_bits, b_5_bits))
-                print("Red {} Green {}  Blue {}".format(bin(r_5_bits), bin(g_6_bits), bin(b_5_bits)))
+               # print(Red, Green, Blue)
+              #  print("Red {} Green {}  Blue {}".format(r_5_bits, g_6_bits, b_5_bits))
+              #  print("Red {} Green {}  Blue {}".format(bin(r_5_bits), bin(g_6_bits), bin(b_5_bits)))
                 Final_value = (r_5_bits << 11) | (g_6_bits << 5) | b_5_bits
-                self.Image_matrix.append(hex(Final_value))
-        print(self.Image_matrix)
+                self.Image_matrix.append(Final_value)
+      #  print(self.Image_matrix)
         print("Imagen Procesada")
 
     """
@@ -178,12 +201,45 @@ class Program(QtWidgets.QMainWindow):
         Port_State, self.Serial_state = self.Serial_data.Connect_Port()
         self.ui.Serial_Informmation.setText("Port {},  {}".format(port, Port_State))
         if(self.Serial_state):
-            self.tiempo2.start()
-        print(self.Serial_state)
+            self.Run_thread = True
+            self.thread_control = threading.Thread(target=self.Thread_data_control)
+            self.thread_control.start()
+
+    def Thread_data_control(self):
+        while(self.Run_thread):
+            self.data = self.Serial_data.Get_serial_data()
+            print(self.data[0])
+            if(self.data[0]=='Ok'):
+                self.Send_image()
+                self.Run_thread = False
+
 
     """
             Fin de metodo conectar serial.
             """
+
+    def Send_image(self):
+        Buffer_Data = []
+        n = 0
+        m = 64
+        for j in range(0, len(self.Image_matrix)):
+            decimal = (self.Image_matrix[j])
+            print(decimal)
+            print(type(decimal))
+            # Se separan los bytes del color al ser de 16bit
+            # se saca la parte alta y la parte baja
+            high_byte = (decimal >> 8)
+            low_byte = (decimal & 255)
+
+            # Se agregan los datos al buffer
+            Buffer_Data.append(high_byte)
+            Buffer_Data.append(low_byte)
+
+        for k in range(0, 184):
+            x = Buffer_Data[n:m]
+            self.Serial_data.Serial_port.write(x)
+            n = n + 64
+            m = m + 64
 
 
     def Send_test_data(self):

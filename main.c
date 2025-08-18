@@ -66,21 +66,25 @@ void Processing_Data(uint8_t Data[])
         }
         
         
-        
+        //pig Command Put image data command
         if(Data[0]==112 && Data[1]==105 && Data[2]==103)
         {
-            
+            //Fill White the display
             ST7735S_Fill_display(White_Color); 
-            CCS_ST7735 = 1;
-            putUSBUSART(writeBuffer,3);
+            CCS_ST7735 = 1;  
+            //Set Display Cursor
             Set_Display_Cursor(0, 0, 63, 91); 
+              __delay_ms(10);
+            //Send Ok Byte
+            putUSBUSART(writeBuffer,3);
             CDCTxService();
             
             
+            //Do while cr command is not in the buffer 
             while(readBuffer[0]!=99 || readBuffer[1]!=114)
             {
-                putUSBUSART(writeBuffer,3);
-                CDCTxService();
+               //putUSBUSART(writeBuffer,3);
+               // CDCTxService();
                 
                 
                 /* If the USB device isn't configured yet, we can't really do anything
