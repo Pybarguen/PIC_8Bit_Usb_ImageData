@@ -32,6 +32,7 @@ class Program(QtWidgets.QMainWindow):
         self.images = []
 
         self.Image_matrix = []
+        self.Image_Array = []
 
         # Temporizador para obtener los datos del puerto Serial
         #self.tiempo2 = QTimer()
@@ -80,6 +81,8 @@ class Program(QtWidgets.QMainWindow):
 
         #Connect Import Image Button With the respective Funtion
         self.ui.Import_Image_button.clicked.connect(self.Import_Images)
+        #Boton para procesar datos de las matrices de las imagenes
+        self.ui.ProcessImg_button.clicked.connect(lambda: self.Pixel_Converter(self.Image_Array))
 
         #Connect Serial button with the function to connect with the hardware
         self.ui.Connect_Serial.clicked.connect(
@@ -129,6 +132,11 @@ class Program(QtWidgets.QMainWindow):
                 if idx in label_mapping:
                     label_mapping[idx].setPixmap(image)
                     label_mapping[idx].setScaledContents(True)
+            for i in range(0, len(self.images)):
+                image = Image.open(filenames[i])
+                self.Image_Array.append(np.array(image))
+            print(len(self.Image_Array))
+
             """
             mi_image = QPixmap(filenames[0])
             self.ui.Image1_Label.setScaledContents(True)
@@ -137,10 +145,12 @@ class Program(QtWidgets.QMainWindow):
             pixeles = np.array(image)
             self.Pixel_Converter(pixeles)
             
-            """
+            
+            
+         
             print(len(self.images))
 
-    """
+   
               Fin funcion importar imagenes
 
               """
@@ -157,7 +167,11 @@ class Program(QtWidgets.QMainWindow):
         """
 
     def Pixel_Converter(self, Pixels):
-        alto, ancho, _ = Pixels.shape
+        for i in range(0, len(Pixels)):
+            alto, ancho, _ = Pixels[i].shape
+            print(alto, ancho)
+
+        """
         print(alto)
         print(ancho)
         for j in range(0, ancho):
@@ -176,6 +190,7 @@ class Program(QtWidgets.QMainWindow):
                 self.Image_matrix.append(Final_value)
       #  print(self.Image_matrix)
         print("Imagen Procesada")
+    """
 
     """
                 Fin del metodo conversion de pixeles
