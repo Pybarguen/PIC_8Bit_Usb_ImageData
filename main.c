@@ -45,6 +45,8 @@ uint8_t control_page =0;
 int date =0;
 
 
+
+
                     
 
                     
@@ -55,10 +57,17 @@ void Processing_Data(uint8_t Data[])
          //Clear Display Command, String = clc
         if(Data[0]==99 && Data[1]==108 && Data[2]==99)
         {
-            
+              //Send Command Ok
+             writeBuffer[0] = 79;
+                writeBuffer[1] = 107;
+                    writeBuffer[2] = 10;
+                        writeBuffer[3] = 13;
+                    putUSBUSART(writeBuffer,3);
+           CDCTxService();
+    
+   
             ST7735S_Fill_display(Black_Color);            
-            //putUSBUSART(writeBuffer,3);
-           // CDCTxService();
+            
                     
                
             
@@ -68,16 +77,23 @@ void Processing_Data(uint8_t Data[])
         
         //pig Command Put image data command
         if(Data[0]==112 && Data[1]==105 && Data[2]==103)
+            
         {
+            //Send Command Ok
+             writeBuffer[0] = 79;
+                writeBuffer[1] = 107;
+                    writeBuffer[2] = 10;
+                        writeBuffer[3] = 13;
+                    putUSBUSART(writeBuffer,3);
+           CDCTxService();
+            
             //Fill White the display
             ST7735S_Fill_display(White_Color); 
             CCS_ST7735 = 1;  
             //Set Display Cursor
             Set_Display_Cursor(0, 0, 63, 91); 
               __delay_ms(10);
-            //Send Ok Byte
-            putUSBUSART(writeBuffer,3);
-            CDCTxService();
+            
             
             
             //Do while cr command is not in the buffer 
@@ -263,11 +279,9 @@ MAIN_RETURN main(void)
     USBDeviceInit();
     USBDeviceAttach();
     
-    writeBuffer[0] = 79;
-                    writeBuffer[1] = 107;
-                    writeBuffer[2] = 10;
-                    writeBuffer[3] = 13;
-                    
+    
+  
+                   
     
     
     //SPI

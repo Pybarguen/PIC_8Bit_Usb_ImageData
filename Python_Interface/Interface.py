@@ -220,18 +220,38 @@ class Program(QtWidgets.QMainWindow):
             self.thread_control = threading.Thread(target=self.Thread_data_control)
             self.thread_control.start()
 
-    def Thread_data_control(self):
-        while(self.Run_thread):
-            self.data = self.Serial_data.Get_serial_data()
-            print(self.data[0])
-            if(self.data[0]=='Ok'):
-                self.Send_image()
-                self.Run_thread = False
+    """
+               Fin de metodo conectar serial.
+               
+               
+               _____________________________
+               """
+
 
 
     """
-            Fin de metodo conectar serial.
-            """
+              Hilo para leer los datos del puerto Serial 
+              sin perdidas.
+              Parametros :  None                   
+
+              """
+
+    def Thread_data_control(self):
+        while(self.Run_thread):
+            self.data = self.Serial_data.Get_serial_data()
+            self.ui.Serial_Informmation.setText(str(self.data[0]))
+            if(self.data[0]=='Ok'):
+                pass
+                #self.Send_image()
+                #self.Run_thread = False
+
+    """
+                Fin Hilo 
+                ________________________________                 
+
+                """
+
+
 
     def Send_image(self):
         Buffer_Data = []
@@ -287,13 +307,7 @@ class Program(QtWidgets.QMainWindow):
 
 
 
-    def Get_Data(self):
-        if(self.Serial_state):
-            self.data = self.Serial_data.Serial_port.readline()
-            self.data = self.data.decode()
-            self.data = self.data.split()
 
-            print(self.data)
 
 
 
