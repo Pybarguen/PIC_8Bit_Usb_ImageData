@@ -35,9 +35,9 @@ class Program(QtWidgets.QMainWindow):
         self.Image_Array = []
 
         # Temporizador para obtener los datos del puerto Serial
-        #self.tiempo2 = QTimer()
-        #self.tiempo2.setInterval(1)
-        #self.tiempo2.timeout.connect(self.Get_Data)
+        self.tiempo2 = QTimer()
+        self.tiempo2.setInterval(1)
+        self.tiempo2.timeout.connect(self.Process_Serial_data)
         #___________________________________________________
 
         self.thread_control = None
@@ -219,6 +219,7 @@ class Program(QtWidgets.QMainWindow):
             self.Run_thread = True
             self.thread_control = threading.Thread(target=self.Thread_data_control)
             self.thread_control.start()
+            self.tiempo2.start()
 
     """
                Fin de metodo conectar serial.
@@ -239,9 +240,7 @@ class Program(QtWidgets.QMainWindow):
     def Thread_data_control(self):
         while(self.Run_thread):
             self.data = self.Serial_data.Get_serial_data()
-            self.ui.Serial_Informmation.setText(str(self.data[0]))
-            if(self.data[0]=='Ok'):
-                pass
+
                 #self.Send_image()
                 #self.Run_thread = False
 
@@ -304,6 +303,15 @@ class Program(QtWidgets.QMainWindow):
             m = m + 64
             print(k)
             """
+
+    def Process_Serial_data(self):
+        if (self.Serial_state):
+            if(self.data):
+                self.ui.Serial_Informmation.setText(str(self.data[0]))
+                if (self.data[0] == 'Ok'):
+                    a = '2234'.encode('utf_8')
+                    self.Serial_data.Serial_port.write(a)
+
 
     def Memory_commands(self, command):
         a = command.encode('utf_8')
