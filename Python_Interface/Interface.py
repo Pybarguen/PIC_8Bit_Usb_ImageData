@@ -305,6 +305,12 @@ class Program(QtWidgets.QMainWindow):
             print(k)
             """
 
+    def Memory_commands(self, command):
+        a = command.encode('utf_8')
+        if (self.Serial_state):
+            self.Serial_data.Serial_port.write(a)
+
+
 
 
 
