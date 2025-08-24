@@ -19,9 +19,17 @@ please contact mla_licensing@microchip.com
 
 /** INCLUDES *******************************************************/
 
+
+#define _STDIO_H    // 
+#define _STDLIB_H   // 
+
 #include "system.h"
 #include "Spi_Interface.h" 
-#include <stdio.h>
+
+
+#include <stdlib.h>
+
+#include <string.h>
 #include "app_device_cdc_basic.h"
 #include "app_led_usb_status.h"
 
@@ -36,23 +44,76 @@ please contact mla_licensing@microchip.com
 AddressBytes AddressMemory;
 
 static  unsigned char readBuffer[CDC_DATA_OUT_EP_SIZE];
+
+
+
 static uint8_t writeBuffer[CDC_DATA_IN_EP_SIZE];
 char memory_buffer[256];
 
 uint8_t i;
 uint8_t numBytesRead;
 uint8_t control_page =0;
+
+int testi=0;
 int date =0;
 
+typedef struct
+{
+    int width;
+    uint8_t height;
+    int size;
+    
+    
+    
+}Image_data;
 
 
+Image_data Control_Image;
 
-                    
+void Process_Command(unsigned char *buffer)
+{
+    char dataprint[];
+    char grupo1[4], grupo2[4], grupo3[4];
+    
+   
+    for(i=0; i<=2; i++)
+    {
+        grupo1[i]= buffer[i];
+        grupo2[i]= buffer[4+i];
+        grupo3[i]= buffer[8+i];
+    }
+    
+    grupo1[3] = '\0';
+    grupo2[3] = '\0';
+    grupo3[3] = '\0';
+ 
+    
+    Control_Image.width = atoi(grupo1);
+    Control_Image.height = atoi(grupo2);
+    Control_Image.size = atoi(grupo3);
+    
+           sprintf(dataprint, "%d", Control_Image.width);  
+          ST7735S_Print_String(Blue_Color, dataprint, 0, 0, 2);
+          
+           sprintf(dataprint, "%d", Control_Image.height);  
+          ST7735S_Print_String(Blue_Color, dataprint, 0, 40, 2);
+          
+           sprintf(dataprint, "%d", Control_Image.size);  
+          ST7735S_Print_String(Blue_Color, dataprint, 0, 60, 2);
+    
+ 
+    
+  
+    
+    
+}
 
                     
 void Processing_Data(uint8_t Data[])
 {
-    
+    uint8_t idx=0;
+     char String_Buffer[];//Buffer to print char in the display
+   
          
          //Clear Display Command, String = clc
         if(Data[0]==99 && Data[1]==108 && Data[2]==99)
@@ -130,33 +191,51 @@ void Processing_Data(uint8_t Data[])
         byte_control = getsUSBUSART(readBuffer, sizeof(readBuffer));
         
       
-       if(byte_control > 0 && byte_control==64)
+       if(byte_control > 0)
        { 
-            
-           
-            if(control_page<4)   
-            {
-            for(i=0; i<byte_control; i++)
-            {  
-                CCS_ST7735 = 0;
-                 __delay_us(1);
-             write_color(readBuffer[i]);             
-               __delay_ms(1);
-             memory_buffer[(control_page * 64) + i] = readBuffer[i];
-             
-            }
-            control_page = control_page+1;
-            }
-            if(control_page==4)
-            {
-                CCS_ST7735 = 1;
-                 __delay_ms(1);
-                Write_Page_Program(AddressMemory, PAGE_SIZE, memory_buffer);
-             
-                CCS_Memory = 1;
-                 AddressMemory.address += 0x000100;
-                 control_page=0;
-            }
+          ST7735S_Fill_display(Orange_Color);  
+          Process_Command(readBuffer); 
+//            while(readBuffer[idx] != '\0' )
+//            { 
+//                if(readBuffer[idx] >= '0' && readBuffer[idx]<='9')
+//                {
+//           testi = testi *10 + (readBuffer[idx] - '0');
+//          
+//          idx++;
+//            }
+//                else{
+//                    
+//                    break;
+//                }
+//                 sprintf(String_Buffer, "%d", testi);  
+//          ST7735S_Print_String(Blue_Color, String_Buffer, 0, 40, 2);
+//           CCS_ST7735 = 1;
+//                
+//            }
+       
+//            if(control_page<4)   
+//            {
+//            for(i=0; i<byte_control; i++)
+//            {  
+//                CCS_ST7735 = 0;
+//                 __delay_us(1);
+//             write_color(readBuffer[i]);             
+//               __delay_ms(1);
+//             memory_buffer[(control_page * 64) + i] = readBuffer[i];
+//             
+//            }
+//            control_page = control_page+1;
+//            }
+//            if(control_page==4)
+//            {
+//                CCS_ST7735 = 1;
+//                 __delay_ms(1);
+//                Write_Page_Program(AddressMemory, PAGE_SIZE, memory_buffer);
+//             
+//                CCS_Memory = 1;
+//                 AddressMemory.address += 0x000100;
+//                 control_page=0;
+//            }
              
             
             }
@@ -266,12 +345,18 @@ void Get_USB_Data()
 MAIN_RETURN main(void)
 {
     
+    
+    
+    Control_Image.width =0;
+Control_Image.height =0;
+Control_Image.size =0;
+    
      AddressMemory.address = 0x000000;
       MemoryID test;
       test.manufacturer = 0;
       test.memory_type = 0;
       test.capacity = 0;
-      char String_Buffer[];//Buffer to print char in the display
+      
       
  
     SYSTEM_Initialize(SYSTEM_STATE_USB_START);
