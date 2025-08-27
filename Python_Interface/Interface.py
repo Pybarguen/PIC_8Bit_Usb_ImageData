@@ -309,10 +309,11 @@ class Program(QtWidgets.QMainWindow):
             if(self.data):
                 self.ui.Serial_Informmation.setText(str(self.data[0]))
                 if (self.data[0] == 'Ok'):
-                    print("Hola")
                     a = '064-123-423'.encode('utf_8')
                     self.Serial_data.Serial_port.write(a)
                     self.data = None
+                if(self.data[0] == "Ready"):
+                    pass
 
 
     def Memory_commands(self, command):

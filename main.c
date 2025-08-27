@@ -70,6 +70,8 @@ typedef struct
 
 Image_data Control_Image;
 
+
+
 void Process_Command(unsigned char *buffer)
 {
     char dataprint[];
@@ -100,6 +102,23 @@ void Process_Command(unsigned char *buffer)
           
            sprintf(dataprint, "%d", Control_Image.size);  
           ST7735S_Print_String(Blue_Color, dataprint, 0, 60, 2);
+          
+          if(Control_Image.width!=0 && Control_Image.height!=0 &&Control_Image.size)
+          {
+              
+               //Send Command Ok
+             writeBuffer[0] = 82;//R
+                writeBuffer[1] = 101;//e
+                    writeBuffer[2] = 97;//a
+                        writeBuffer[3] = 100;//d
+                            writeBuffer[4] = 121;//y
+                                writeBuffer[5] = 10;//New Line
+                                    writeBuffer[6] = 13;//CR
+                      putUSBUSART(writeBuffer,6);
+           CDCTxService();
+            
+              
+          }
     
  
     
