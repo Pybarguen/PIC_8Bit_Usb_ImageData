@@ -215,6 +215,12 @@ class Program(QtWidgets.QMainWindow):
         self.Serial_data = Serial_data(port, baudrate)
         Port_State, self.Serial_state = self.Serial_data.Connect_Port()
         self.ui.Serial_Informmation.setText("Port {},  {}".format(port, Port_State))
+
+
+        """
+        Si el puerto serial esta conectado se inicia el hilo para la recepsion sin 
+        perdida de datos 
+        """
         if(self.Serial_state):
             self.Run_thread = True
             self.thread_control = threading.Thread(target=self.Thread_data_control)
@@ -312,8 +318,9 @@ class Program(QtWidgets.QMainWindow):
                     a = '064-123-423'.encode('utf_8')
                     self.Serial_data.Serial_port.write(a)
                     self.data = None
-                if(self.data[0] == "Ready"):
-                    pass
+                if(self.data and self.data[0] == "Ready"):
+                    a = 'cr'.encode('utf_8')
+                    self.Serial_data.Serial_port.write(a)
 
 
     def Memory_commands(self, command):

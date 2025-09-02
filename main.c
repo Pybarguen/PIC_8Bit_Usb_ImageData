@@ -74,6 +74,9 @@ Image_data Control_Image;
 
 void Process_Command(unsigned char *buffer)
 {
+    
+    
+     ST7735S_Fill_display(GreenApple_Color); 
     char dataprint[];
     char grupo1[4], grupo2[4], grupo3[4];
     
@@ -120,8 +123,7 @@ void Process_Command(unsigned char *buffer)
               
           }
     
- 
-    
+  
   
     
     
@@ -175,7 +177,11 @@ void Processing_Data(uint8_t Data[])
               __delay_ms(10);
             
             
-            
+             Control_Image.width = 0;//Restart Image width data
+                    Control_Image.height = 0;//Restart Image height data
+                            Control_Image.size = 0;//Restart Image size data
+              
+              
             //Do while cr command is not in the buffer 
             while(readBuffer[0]!=99 || readBuffer[1]!=114)
             {
@@ -212,8 +218,12 @@ void Processing_Data(uint8_t Data[])
       
        if(byte_control > 0)
        { 
-          ST7735S_Fill_display(Orange_Color);  
+          
+          if(Control_Image.width==0 && Control_Image.height==0 &&Control_Image.size==0)
+          {
+              ST7735S_Fill_display(Orange_Color);
           Process_Command(readBuffer); 
+          }
 //            while(readBuffer[idx] != '\0' )
 //            { 
 //                if(readBuffer[idx] >= '0' && readBuffer[idx]<='9')
