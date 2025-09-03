@@ -40,6 +40,7 @@ class Program(QtWidgets.QMainWindow):
         self.tiempo2.timeout.connect(self.Process_Serial_data)
         #___________________________________________________
 
+        #Variables para el control de hilos
         self.thread_control = None
         self.Run_thread = False
 
@@ -119,9 +120,11 @@ class Program(QtWidgets.QMainWindow):
             "Select Files",
             r"C:/images/",
             "Images (*.png *.jpg)")
-        if filenames:
+        if filenames:#Si hay archivos elegidos por el usuario
             for i in range(0, len(filenames)):
                 self.images.append(QPixmap(filenames[i]))
+
+            #Se crea un diccionario con los Labels de la interfaz.
             label_mapping = {
                 0: self.ui.Image1_Label,
                 1: self.ui.Image2_Label,
@@ -130,6 +133,9 @@ class Program(QtWidgets.QMainWindow):
                 4: self.ui.Image5_Label,
                 5: self.ui.Image6_Label,
             }
+
+            #Se itera en la lista de imagenes y se ponen los respectivos indices
+            #en los labels
             for idx, image in enumerate(self.images):
                 if idx in label_mapping:
                     label_mapping[idx].setPixmap(image)
@@ -139,45 +145,43 @@ class Program(QtWidgets.QMainWindow):
                 self.Image_Array.append(np.array(image))
             print(len(self.Image_Array))
 
-            """
-            mi_image = QPixmap(filenames[0])
-            self.ui.Image1_Label.setScaledContents(True)
-            self.ui.Image1_Label.setPixmap(mi_image)
-            image = Image.open(filenames[0])
-            pixeles = np.array(image)
-            self.Pixel_Converter(pixeles)
-            
-            
-            
-         
-            print(len(self.images))
-
-   
-              Fin funcion importar imagenes
-
-              """
-
-
-
+    # ______________________________________________________________________
 
     """
         Funcion para convertir los pixeles de color en formato de 16bits
         aun se pueden observar perdidas de color en la conversion
         la funcion guarda los valores de 16bits por pixel en la matrix
         Image_matrix, el codigo aun se encuentra en pruebas.
+        
+         Parametros :
+
+               Pixels contiene la lista de array numpy de cada una de las 
+               imagenes
+
 
         """
 
     def Pixel_Converter(self, Pixels):
+        #Diccionario para guardar los metadatos de las imagenes y avisar al hardware
         image_data = {"width" : 0, "height" : 0, "size" : 0}
-        list_data_img = []
-        if len(Pixels)!=0:
+        if len(Pixels)!=0:#Si pixels realmente contiene imagenes
+            """
+            
+            Se itera en el numero de imagenes en en la variable array Pixels
+            se obtione los metadatos de cada imagen
+            ancho, alto y produndida
+    
+            """
             for t in range(0, len(Pixels)):
                 alto, ancho, _ = Pixels[t].shape
                 image_data["width"] = ancho
                 image_data["height"] = alto
                 image_data["size"] = int((alto * ancho)/256)
                 current_img = Pixels[t]
+                """
+                se itera en cada uno de los pixeles y se convierte en 
+                formato de color de 16bits R5G6B5
+                """
                 for j in range(0, ancho):
                     for i in range(0, alto):
                         Red = int(current_img[i, j, 0])
@@ -189,29 +193,20 @@ class Program(QtWidgets.QMainWindow):
                         Final_value = (r_5_bits << 11) | (g_6_bits << 5) | b_5_bits
                         self.Image_matrix.append(Final_value)
 
-                print(len(self.Image_matrix))
+        else:
+            print("se debe avisar en la interfaz que no hay imagenes para procesar")
 
 
 
 
-        """
-        print(alto)
-        print(ancho)
-        
 
-               # print(Red, Green, Blue)
-              #  print("Red {} Green {}  Blue {}".format(r_5_bits, g_6_bits, b_5_bits))
-              #  print("Red {} Green {}  Blue {}".format(bin(r_5_bits), bin(g_6_bits), bin(b_5_bits)))
-                
-      #  print(self.Image_matrix)
-        print("Imagen Procesada")
-    """
 
     """
                 Fin del metodo conversion de pixeles
 
                 """
 
+#______________________________________________________________________
 
     """
            Funcion para conectar el puerto Serial
@@ -226,6 +221,8 @@ class Program(QtWidgets.QMainWindow):
            """
 
     def Connect_Serial(self, port, baudrate):
+        #Se conecta al puerto serial, si la conexion no es Ok
+        #Se menciona en la interfaz
         #print("Puerto {}   Baudrate {}".format(port, baudrate))
         self.Serial_data = Serial_data(port, baudrate)
         Port_State, self.Serial_state = self.Serial_data.Connect_Port()
@@ -275,8 +272,6 @@ class Program(QtWidgets.QMainWindow):
 
     def Send_image(self):
         Buffer_Data = []
-        n = 0
-        m = 64
         for j in range(0, len(self.Image_matrix)):
             decimal = (self.Image_matrix[j])
             print(decimal)
