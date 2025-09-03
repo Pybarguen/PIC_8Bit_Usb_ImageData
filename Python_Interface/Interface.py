@@ -61,6 +61,8 @@ class Program(QtWidgets.QMainWindow):
             "460800"
         ]
 
+        self.ui.Serial_Informmation.setText("Connection state : Disconnect ")
+
         self.ui.ComboBox_BaudRate.addItems(baudrates)
 
         """
@@ -167,27 +169,40 @@ class Program(QtWidgets.QMainWindow):
         """
 
     def Pixel_Converter(self, Pixels):
-        for i in range(0, len(Pixels)):
-            alto, ancho, _ = Pixels[i].shape
-            print(alto, ancho)
+        image_data = {"width" : 0, "height" : 0, "size" : 0}
+        list_data_img = []
+        if len(Pixels)!=0:
+            for t in range(0, len(Pixels)):
+                alto, ancho, _ = Pixels[t].shape
+                image_data["width"] = ancho
+                image_data["height"] = alto
+                image_data["size"] = int((alto * ancho)/256)
+                current_img = Pixels[t]
+                for j in range(0, ancho):
+                    for i in range(0, alto):
+                        Red = int(current_img[i, j, 0])
+                        Green = int(current_img[i, j, 1])
+                        Blue = int(current_img[i, j, 2])
+                        r_5_bits = (Red >> 3) & 0x1F
+                        g_6_bits = (Green >> 2) & 0x3F
+                        b_5_bits = (Blue >> 3) & 0x1F
+                        Final_value = (r_5_bits << 11) | (g_6_bits << 5) | b_5_bits
+                        self.Image_matrix.append(Final_value)
+
+                print(len(self.Image_matrix))
+
+
+
 
         """
         print(alto)
         print(ancho)
-        for j in range(0, ancho):
-            for i in range(0, alto):
-                Red = int(Pixels[i, j, 0])
-                Green = int(Pixels[i, j, 1])
-                Blue = int(Pixels[i, j, 2])
-                r_5_bits = (Red >> 3) & 0x1F
-                g_6_bits = (Green >> 2) & 0x3F
-                b_5_bits = (Blue >> 3) & 0x1F
+        
 
                # print(Red, Green, Blue)
               #  print("Red {} Green {}  Blue {}".format(r_5_bits, g_6_bits, b_5_bits))
               #  print("Red {} Green {}  Blue {}".format(bin(r_5_bits), bin(g_6_bits), bin(b_5_bits)))
-                Final_value = (r_5_bits << 11) | (g_6_bits << 5) | b_5_bits
-                self.Image_matrix.append(Final_value)
+                
       #  print(self.Image_matrix)
         print("Imagen Procesada")
     """
@@ -283,9 +298,8 @@ class Program(QtWidgets.QMainWindow):
 
 
     def Send_test_data(self):
-        a = 'pig'.encode('utf_8')
-        if (self.Serial_state):
-            self.Serial_data.Serial_port.write(a)
+        a = 'Test'.encode('utf_8')
+        self.Serial_data.Serial_port.write(a)
         # Put Image Command
         """
         Buffer_Data = []
@@ -313,12 +327,18 @@ class Program(QtWidgets.QMainWindow):
     def Process_Serial_data(self):
         if (self.Serial_state):
             if(self.data):
-                self.ui.Serial_Informmation.setText(str(self.data[0]))
-                if (self.data[0] == 'Ok'):
+
+                if (self.data and self.data[0] == 'Ok'):
+                    self.ui.Serial_Informmation.setText(str(self.data[0]))
                     a = '064-123-423'.encode('utf_8')
                     self.Serial_data.Serial_port.write(a)
                     self.data = None
                 if(self.data and self.data[0] == "Ready"):
+                    self.ui.Serial_Informmation.setText(str(self.data[0]))
+                    a = 'cr'.encode('utf_8')
+                    self.Serial_data.Serial_port.write(a)
+                if (self.data and self.data[0] == "Okt"):
+                    self.ui.Serial_Informmation.setText("Test Port State : Ok")
                     a = 'cr'.encode('utf_8')
                     self.Serial_data.Serial_port.write(a)
 

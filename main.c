@@ -155,6 +155,24 @@ void Processing_Data(uint8_t Data[])
             
              
         }
+     
+     //Test Command
+        if(Data[0]==84 && Data[1]==101 && Data[2]==115 && Data[3]==116 )
+            
+        {
+            
+            //Send Command Okt Request Test byte
+             writeBuffer[0] = 79;
+                writeBuffer[1] = 107;
+                    writeBuffer[2] = 116;
+                    writeBuffer[3] = 10;
+                        writeBuffer[4] = 13;
+                    putUSBUSART(writeBuffer,4);
+           CDCTxService();
+            
+            
+        }
+        
         
         
         //pig Command Put image data command
