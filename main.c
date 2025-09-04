@@ -53,10 +53,10 @@ char memory_buffer[256];
 uint8_t i;
 uint8_t numBytesRead;
 uint8_t control_page =0;
-
+uint8_t numImgs = 0;
 int testi=0;
 int date =0;
-
+char dataprint[10];
 typedef struct
 {
     int width;
@@ -70,6 +70,18 @@ typedef struct
 
 Image_data Control_Image;
 
+enum Reception_data_state{
+     
+     WAITING_IMGS_NUMBERS,            
+     WAITING_IMGS_DATA,
+     SUSPENDED
+    
+             
+     
+     
+     
+ }; 
+enum Reception_data_state transfer_state;
 
 
 void Process_Command(unsigned char *buffer)
@@ -77,7 +89,7 @@ void Process_Command(unsigned char *buffer)
     
     
      ST7735S_Fill_display(GreenApple_Color); 
-    char dataprint[];
+    
     char grupo1[4], grupo2[4], grupo3[4];
     
    
@@ -176,9 +188,11 @@ void Processing_Data(uint8_t Data[])
         
         
         //pig Command Put image data command
-        if(Data[0]==112 && Data[1]==105 && Data[2]==103)
+        if(Data[0]==112 && Data[1]==105 && Data[2]==109 && Data[3]==103)
             
         {
+            
+            transfer_state = WAITING_IMGS_NUMBERS;
             //Send Command Ok
              writeBuffer[0] = 79;
                 writeBuffer[1] = 107;
@@ -191,8 +205,8 @@ void Processing_Data(uint8_t Data[])
             ST7735S_Fill_display(White_Color); 
             CCS_ST7735 = 1;  
             //Set Display Cursor
-            Set_Display_Cursor(0, 0, 63, 91); 
-              __delay_ms(10);
+            //Set_Display_Cursor(0, 0, 63, 91); 
+            //  __delay_ms(10);
             
             
              Control_Image.width = 0;//Restart Image width data
@@ -237,10 +251,26 @@ void Processing_Data(uint8_t Data[])
        if(byte_control > 0)
        { 
           
-          if(Control_Image.width==0 && Control_Image.height==0 &&Control_Image.size==0)
+           //Si aun no se ha recibido el numero de imagenes a enviar
+          if(transfer_state==WAITING_IMGS_NUMBERS)
           {
-              ST7735S_Fill_display(Orange_Color);
-          Process_Command(readBuffer); 
+              char grupo4[3];
+              for(i=0; i<=2; i++)
+            {
+                grupo4[i]= readBuffer[i];
+                
+             }
+              grupo4[2]  = '\0';
+              numImgs = atoi(grupo4);//Se obtiene el numero de imagenes a enviar
+              
+              if(numImgs !=0 && Control_Image.width==0 && Control_Image.height==0 &&Control_Image.size==0)
+              {
+                  ST7735S_Fill_display(Orange_Color);
+                  sprintf(dataprint, "%d", numImgs);  
+                 ST7735S_Print_String(Blue_Color, dataprint, 0, 0, 2);
+              }
+              
+          //Process_Command(readBuffer); 
           }
 //            while(readBuffer[idx] != '\0' )
 //            { 
@@ -412,6 +442,7 @@ Control_Image.size =0;
     USBDeviceAttach();
     
     
+    
   
                    
     
@@ -436,6 +467,8 @@ Control_Image.size =0;
     CCS_ST7735 = 1;
    __delay_ms(10);
    
+   
+   transfer_state = SUSPENDED;
   
    
 //    Read_Device_ID(&test);

@@ -44,6 +44,9 @@ class Program(QtWidgets.QMainWindow):
         self.thread_control = None
         self.Run_thread = False
 
+        #variable para guardar los metadatos de las imagenes en forma de diccionario
+        self.Image_metadata = None
+
         """
         Configuracion de los WidGets ComboBox
         
@@ -86,6 +89,7 @@ class Program(QtWidgets.QMainWindow):
         self.ui.Import_Image_button.clicked.connect(self.Import_Images)
         #Boton para procesar datos de las matrices de las imagenes
         self.ui.ProcessImg_button.clicked.connect(lambda: self.Pixel_Converter(self.Image_Array))
+        self.ui.Send_Image.clicked.connect(lambda: self.Send_image())
 
         #Connect Serial button with the function to connect with the hardware
         self.ui.Connect_Serial.clicked.connect(
@@ -163,7 +167,7 @@ class Program(QtWidgets.QMainWindow):
 
     def Pixel_Converter(self, Pixels):
         #Diccionario para guardar los metadatos de las imagenes y avisar al hardware
-        image_data = {"width" : 0, "height" : 0, "size" : 0}
+        self.Image_metadata = {"width" : 0, "height" : 0, "size" : 0}
         if len(Pixels)!=0:#Si pixels realmente contiene imagenes
             """
             
@@ -174,9 +178,9 @@ class Program(QtWidgets.QMainWindow):
             """
             for t in range(0, len(Pixels)):
                 alto, ancho, _ = Pixels[t].shape
-                image_data["width"] = ancho
-                image_data["height"] = alto
-                image_data["size"] = int((alto * ancho)/256)
+                self.Image_metadata["width"] = ancho
+                self.Image_metadata["height"] = alto
+                self.Image_metadata["size"] = int((alto * ancho)/256)
                 current_img = Pixels[t]
                 """
                 se itera en cada uno de los pixeles y se convierte en 
@@ -271,6 +275,19 @@ class Program(QtWidgets.QMainWindow):
 
 
     def Send_image(self):
+        if(self.Image_metadata and self.Serial_state):#Si hay metadatos elegidos y el puerto esta conectado
+            a = 'pimg'.encode('utf_8')#Se envia el comando Pimg para poner imagenes
+            self.Serial_data.Serial_port.write(a)
+            print("hola mundo")
+
+        else:
+            return
+
+
+
+
+
+        """
         Buffer_Data = []
         for j in range(0, len(self.Image_matrix)):
             decimal = (self.Image_matrix[j])
@@ -290,13 +307,14 @@ class Program(QtWidgets.QMainWindow):
             self.Serial_data.Serial_port.write(x)
             n = n + 64
             m = m + 64
-
+"""
 
     def Send_test_data(self):
         a = 'Test'.encode('utf_8')
         self.Serial_data.Serial_port.write(a)
         # Put Image Command
-        """
+
+        """"
         Buffer_Data = []
         n = 0
         m = 64
@@ -325,7 +343,7 @@ class Program(QtWidgets.QMainWindow):
 
                 if (self.data and self.data[0] == 'Ok'):
                     self.ui.Serial_Informmation.setText(str(self.data[0]))
-                    a = '064-123-423'.encode('utf_8')
+                    a = str(len(self.Image_Array)).encode('utf_8')
                     self.Serial_data.Serial_port.write(a)
                     self.data = None
                 if(self.data and self.data[0] == "Ready"):
