@@ -5,6 +5,8 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtCore import QTimer
 from PIL import Image
+import time
+
 from Serial_server import *
 import numpy as np
 import threading
@@ -46,6 +48,7 @@ class Program(QtWidgets.QMainWindow):
 
         #variable para guardar los metadatos de las imagenes en forma de diccionario
         self.Image_metadata = None
+        self.Image_metadata_array = []
 
         """
         Configuracion de los WidGets ComboBox
@@ -166,8 +169,10 @@ class Program(QtWidgets.QMainWindow):
         """
 
     def Pixel_Converter(self, Pixels):
+
         #Diccionario para guardar los metadatos de las imagenes y avisar al hardware
         self.Image_metadata = {"width" : 0, "height" : 0, "size" : 0}
+
         if len(Pixels)!=0:#Si pixels realmente contiene imagenes
             """
             
@@ -181,6 +186,7 @@ class Program(QtWidgets.QMainWindow):
                 self.Image_metadata["width"] = ancho
                 self.Image_metadata["height"] = alto
                 self.Image_metadata["size"] = int((alto * ancho)/256)
+                self.Image_metadata_array.append(self.Image_metadata)
                 current_img = Pixels[t]
                 """
                 se itera en cada uno de los pixeles y se convierte en 
@@ -342,15 +348,38 @@ class Program(QtWidgets.QMainWindow):
             if(self.data):
 
                 if (self.data and self.data[0] == 'Ok'):
+                    #Si el hardware responde Ok despues de enviar el comando
+                    #pimg el software responde con el numero de imagenes a enviar
                     self.ui.Serial_Informmation.setText(str(self.data[0]))
                     a = str(len(self.Image_Array)).encode('utf_8')
                     self.Serial_data.Serial_port.write(a)
                     self.data = None
-                if(self.data and self.data[0] == "Ready"):
+
+                elif(self.data and self.data[0] == 'wait'):
+                    self.data = None
+                    for i in range(0, 1):
+                        print(self.Image_metadata_array[i]["width"])
+
+                        metada = ("0" + str(self.Image_metadata_array[i]["width"]) + "-" +
+                                  "0" + str(self.Image_metadata_array[i]["height"]) + "-" +
+                                  "0" + str(self.Image_metadata_array[i]["size"]))
+
+                        print(metada)
+                        a =  metada.encode('utf_8')
+                        time.sleep(1)
+                        self.Serial_data.Serial_port.write(a)
+
+
+
+
+
+                elif(self.data and self.data[0] == "Ready"):
                     self.ui.Serial_Informmation.setText(str(self.data[0]))
                     a = 'cr'.encode('utf_8')
                     self.Serial_data.Serial_port.write(a)
-                if (self.data and self.data[0] == "Okt"):
+
+
+                elif(self.data and self.data[0] == "Okt"):
                     self.ui.Serial_Informmation.setText("Test Port State : Ok")
                     a = 'cr'.encode('utf_8')
                     self.Serial_data.Serial_port.write(a)

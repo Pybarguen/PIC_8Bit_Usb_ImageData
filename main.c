@@ -250,10 +250,19 @@ void Processing_Data(uint8_t Data[])
       
        if(byte_control > 0)
        { 
+           
+           if(transfer_state==WAITING_IMGS_DATA)
+              
+          {
+          Process_Command(readBuffer);
+          transfer_state = SUSPENDED;
+            
+          }
           
            //Si aun no se ha recibido el numero de imagenes a enviar
           if(transfer_state==WAITING_IMGS_NUMBERS)
           {
+              //Se Obtiene el numero de imagenes
               char grupo4[3];
               for(i=0; i<=2; i++)
             {
@@ -263,15 +272,29 @@ void Processing_Data(uint8_t Data[])
               grupo4[2]  = '\0';
               numImgs = atoi(grupo4);//Se obtiene el numero de imagenes a enviar
               
-              if(numImgs !=0 && Control_Image.width==0 && Control_Image.height==0 &&Control_Image.size==0)
+              if(numImgs !=0 )
               {
                   ST7735S_Fill_display(Orange_Color);
                   sprintf(dataprint, "%d", numImgs);  
                  ST7735S_Print_String(Blue_Color, dataprint, 0, 0, 2);
+                 
+                  //Send request wait
+             writeBuffer[0] = 119;
+                writeBuffer[1] = 97;
+                    writeBuffer[2] = 105;
+                        writeBuffer[3] = 116;
+                            writeBuffer[4] = 10;
+                                writeBuffer[5] = 13;
+                    putUSBUSART(writeBuffer,5);
+                    CDCTxService();
+                    transfer_state = WAITING_IMGS_DATA;
+                    
+                       
               }
               
           //Process_Command(readBuffer); 
           }
+          
 //            while(readBuffer[idx] != '\0' )
 //            { 
 //                if(readBuffer[idx] >= '0' && readBuffer[idx]<='9')
