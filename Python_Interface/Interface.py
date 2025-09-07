@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtCore import QTimer
 from PIL import Image
 import time
-
+from image import *
 from Serial_server import *
 import numpy as np
 import threading
@@ -201,7 +201,10 @@ class Program(QtWidgets.QMainWindow):
                         g_6_bits = (Green >> 2) & 0x3F
                         b_5_bits = (Blue >> 3) & 0x1F
                         Final_value = (r_5_bits << 11) | (g_6_bits << 5) | b_5_bits
+
                         self.Image_matrix.append(Final_value)
+                print(self.Image_matrix)
+
 
         else:
             print("se debe avisar en la interfaz que no hay imagenes para procesar")
@@ -351,9 +354,11 @@ class Program(QtWidgets.QMainWindow):
                     #Si el hardware responde Ok despues de enviar el comando
                     #pimg el software responde con el numero de imagenes a enviar
                     self.ui.Serial_Informmation.setText(str(self.data[0]))
-                    a = str(len(self.Image_Array)).encode('utf_8')
+                    b = "064-092-023"
+                    a = b.encode('utf_8')  # Put Image Command
                     self.Serial_data.Serial_port.write(a)
                     self.data = None
+                    print(a)
 
                 elif(self.data and self.data[0] == 'wait'):
                     self.data = None
@@ -366,7 +371,7 @@ class Program(QtWidgets.QMainWindow):
 
                         print(metada)
                         a =  metada.encode('utf_8')
-                        time.sleep(1)
+
                         self.Serial_data.Serial_port.write(a)
 
 
@@ -375,8 +380,27 @@ class Program(QtWidgets.QMainWindow):
 
                 elif(self.data and self.data[0] == "Ready"):
                     self.ui.Serial_Informmation.setText(str(self.data[0]))
-                    a = 'cr'.encode('utf_8')
-                    self.Serial_data.Serial_port.write(a)
+                    print("Docito")
+
+                    Buffer_Data = []
+                    n = 0
+                    m = 64
+                    for j in range(0, len(img3)):
+                        decimal = img3[j]
+                        # Se separan los bytes del color al ser de 16bit
+                        # se saca la parte alta y la parte baja
+                        high_byte = int(decimal >> 8)
+                        low_byte = int(decimal & 255)
+
+                        # Se agregan los datos al buffer
+                        Buffer_Data.append(high_byte)
+                        Buffer_Data.append(low_byte)
+
+                    for k in range(0, 184):
+                        x = Buffer_Data[n:m]
+                        self.Serial_data.Serial_port.write(x)
+                        n = n + 64
+                        m = m + 64
 
 
                 elif(self.data and self.data[0] == "Okt"):

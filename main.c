@@ -73,8 +73,10 @@ Image_data Control_Image;
 enum Reception_data_state{
      
      WAITING_IMGS_NUMBERS,            
-     WAITING_IMGS_DATA,
-     SUSPENDED
+     WAITING_IMGS_DATA,  
+     READY_FOR_IMG_PIXELS,
+     SUSPENDED,
+     MD
     
              
      
@@ -88,16 +90,16 @@ void Process_Command(unsigned char *buffer)
 {
     
     
-     ST7735S_Fill_display(GreenApple_Color); 
+    
     
     char grupo1[4], grupo2[4], grupo3[4];
     
    
-    for(i=0; i<=2; i++)
+    for(uint8_t p =0; p<=2; p++)
     {
-        grupo1[i]= buffer[i];
-        grupo2[i]= buffer[4+i];
-        grupo3[i]= buffer[8+i];
+        grupo1[p]= buffer[p];
+        grupo2[p]= buffer[4+p];
+        grupo3[p]= buffer[8+p];
     }
     
     grupo1[3] = '\0';
@@ -109,6 +111,7 @@ void Process_Command(unsigned char *buffer)
     Control_Image.height = atoi(grupo2);
     Control_Image.size = atoi(grupo3);
     
+    
            sprintf(dataprint, "%d", Control_Image.width);  
           ST7735S_Print_String(Blue_Color, dataprint, 0, 0, 2);
           
@@ -118,9 +121,9 @@ void Process_Command(unsigned char *buffer)
            sprintf(dataprint, "%d", Control_Image.size);  
           ST7735S_Print_String(Blue_Color, dataprint, 0, 60, 2);
           
-          if(Control_Image.width!=0 && Control_Image.height!=0 &&Control_Image.size)
-          {
-              
+          
+          
+              ST7735S_Fill_display(Yellow_Color); 
                //Send Command Ok
              writeBuffer[0] = 82;//R
                 writeBuffer[1] = 101;//e
@@ -129,23 +132,76 @@ void Process_Command(unsigned char *buffer)
                             writeBuffer[4] = 121;//y
                                 writeBuffer[5] = 10;//New Line
                                     writeBuffer[6] = 13;//CR
+                                 
                       putUSBUSART(writeBuffer,6);
-           CDCTxService();
-            
+                        CDCTxService();
               
-          }
-    
+          
+             
+           
+             
+             transfer_state = READY_FOR_IMG_PIXELS;
+         
+           
+            
   
-  
-    
+             
     
 }
 
                     
-void Processing_Data(uint8_t Data[])
+void Processing_Data(unsigned char Data[], uint8_t byte_control)
 {
     uint8_t idx=0;
      char String_Buffer[];//Buffer to print char in the display
+     
+     if(transfer_state == READY_FOR_IMG_PIXELS)
+     {
+         
+              
+                      Set_Display_Cursor(0, 0, 63, 91); 
+                        transfer_state = SUSPENDED;
+           
+           
+          
+      
+             
+              
+          
+         
+     }
+     if(transfer_state == SUSPENDED && byte_control==64)
+      {
+        
+         
+          
+          //Do while cr command is not in the buffer 
+                    
+    
+    
+                
+            for(int rx=0; rx<byte_control; rx++)
+            {  
+             
+                 __delay_us(1);
+             write_color(readBuffer[rx]);             
+             
+            }
+                 
+                
+                 
+            }
+    
+          
+          
+          
+      
+     
+      if(transfer_state == WAITING_IMGS_DATA && byte_control==11)
+          
+      {
+          Process_Command(readBuffer);
+      }
    
          
          //Clear Display Command, String = clc
@@ -160,7 +216,7 @@ void Processing_Data(uint8_t Data[])
            CDCTxService();
     
    
-            ST7735S_Fill_display(Black_Color);            
+                   
             
                     
                
@@ -187,12 +243,13 @@ void Processing_Data(uint8_t Data[])
         
         
         
-        //pig Command Put image data command
+        //pimg Command Put image data command
         if(Data[0]==112 && Data[1]==105 && Data[2]==109 && Data[3]==103)
             
         {
             
-            transfer_state = WAITING_IMGS_NUMBERS;
+            
+             
             //Send Command Ok
              writeBuffer[0] = 79;
                 writeBuffer[1] = 107;
@@ -202,125 +259,39 @@ void Processing_Data(uint8_t Data[])
            CDCTxService();
             
             //Fill White the display
-            ST7735S_Fill_display(White_Color); 
-            CCS_ST7735 = 1;  
+            ST7735S_Fill_display(Green_Color);             
+            transfer_state = WAITING_IMGS_DATA;
             //Set Display Cursor
-            //Set_Display_Cursor(0, 0, 63, 91); 
-            //  __delay_ms(10);
             
+                
             
              Control_Image.width = 0;//Restart Image width data
                     Control_Image.height = 0;//Restart Image height data
                             Control_Image.size = 0;//Restart Image size data
-              
-              
-            //Do while cr command is not in the buffer 
-            while(readBuffer[0]!=99 || readBuffer[1]!=114)
-            {
-               //putUSBUSART(writeBuffer,3);
-               // CDCTxService();
-                
-                
-                /* If the USB device isn't configured yet, we can't really do anything
-     * else since we don't have a host to talk to.  So jump back to the
-     * top of the while loop. */
-    if( USBGetDeviceState() < CONFIGURED_STATE )
-    {
-        return;
-    }
-
-    /* If we are currently suspended, then we need to see if we need to
-     * issue a remote wakeup.  In either case, we shouldn't process any
-     * keyboard commands since we aren't currently communicating to the host
-     * thus just continue back to the start of the while loop. */
-    if( USBIsDeviceSuspended()== true )
-    {
-        return;
-    }
-        
-    
-    if( USBUSARTIsTxTrfReady() == true)
-    {
-       
-        
-        int byte_control;
-        char value;
-        byte_control = getsUSBUSART(readBuffer, sizeof(readBuffer));
-        
+                  
+        }
+     
+     
       
-       if(byte_control > 0)
-       { 
-           
-           if(transfer_state==WAITING_IMGS_DATA)
-              
-          {
-          Process_Command(readBuffer);
-          transfer_state = SUSPENDED;
             
-          }
-          
-           //Si aun no se ha recibido el numero de imagenes a enviar
-          if(transfer_state==WAITING_IMGS_NUMBERS)
-          {
-              //Se Obtiene el numero de imagenes
-              char grupo4[3];
-              for(i=0; i<=2; i++)
-            {
-                grupo4[i]= readBuffer[i];
                 
-             }
-              grupo4[2]  = '\0';
-              numImgs = atoi(grupo4);//Se obtiene el numero de imagenes a enviar
-              
-              if(numImgs !=0 )
-              {
-                  ST7735S_Fill_display(Orange_Color);
-                  sprintf(dataprint, "%d", numImgs);  
-                 ST7735S_Print_String(Blue_Color, dataprint, 0, 0, 2);
-                 
-                  //Send request wait
-             writeBuffer[0] = 119;
-                writeBuffer[1] = 97;
-                    writeBuffer[2] = 105;
-                        writeBuffer[3] = 116;
-                            writeBuffer[4] = 10;
-                                writeBuffer[5] = 13;
-                    putUSBUSART(writeBuffer,5);
-                    CDCTxService();
-                    transfer_state = WAITING_IMGS_DATA;
-                    
-                       
-              }
-              
-          //Process_Command(readBuffer); 
-          }
-          
-//            while(readBuffer[idx] != '\0' )
-//            { 
-//                if(readBuffer[idx] >= '0' && readBuffer[idx]<='9')
-//                {
-//           testi = testi *10 + (readBuffer[idx] - '0');
-//          
-//          idx++;
-//            }
-//                else{
-//                    
-//                    break;
-//                }
-//                 sprintf(String_Buffer, "%d", testi);  
-//          ST7735S_Print_String(Blue_Color, String_Buffer, 0, 40, 2);
-//           CCS_ST7735 = 1;
-//                
-//            }
-       
+                
+      
+ 
+    
+   
+
+        
+           
 //            if(control_page<4)   
 //            {
+//                
 //            for(i=0; i<byte_control; i++)
 //            {  
-//                CCS_ST7735 = 0;
+//             
 //                 __delay_us(1);
 //             write_color(readBuffer[i]);             
-//               __delay_ms(1);
+//             
 //             memory_buffer[(control_page * 64) + i] = readBuffer[i];
 //             
 //            }
@@ -328,36 +299,42 @@ void Processing_Data(uint8_t Data[])
 //            }
 //            if(control_page==4)
 //            {
-//                CCS_ST7735 = 1;
-//                 __delay_ms(1);
-//                Write_Page_Program(AddressMemory, PAGE_SIZE, memory_buffer);
+//               // CCS_ST7735 = 1;
+//              //   __delay_ms(1);
+//              //  Write_Page_Program(AddressMemory, PAGE_SIZE, memory_buffer);
 //             
-//                CCS_Memory = 1;
+//              //  CCS_Memory = 1;
 //                 AddressMemory.address += 0x000100;
 //                 control_page=0;
+//                 
+//                
+//                 
 //            }
+            
+            
+         //  }
              
             
-            }
+          }
+
                
             
              
-        }
+        
                    
-                    CDCTxService();
-            }
+                 
+           
         
                     
                     
                     
             
-            } 
+            
               
     
     
    
     
-}
 
 
 
@@ -419,7 +396,7 @@ void Get_USB_Data()
 //            }
 //        }
         
-        Processing_Data(readBuffer);
+        Processing_Data(readBuffer, numBytesRead );
        }
         
 //        if(numBytesRead > 0)
@@ -497,8 +474,8 @@ Control_Image.size =0;
 //    Read_Device_ID(&test);
  //  AddressMemory.address = 0x000000;
  // Sector_erase_4kb(AddressMemory);
-//   Block_Erase_64KB(AddressMemory);
-     __delay_ms(900);
+ //     Block_Erase_64KB(AddressMemory);
+ //    __delay_ms(900);
 //    Write_Page_Program(AddressMemory, 256);
 //    Read_Address(AddressMemory, &date);
  //   Read_Page(AddressMemory, memory_buffer);
