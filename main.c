@@ -75,6 +75,7 @@ enum Reception_data_state{
      WAITING_IMGS_NUMBERS,            
      WAITING_IMGS_DATA,  
      READY_FOR_IMG_PIXELS,
+     SET_DATA_POINT,
      SUSPENDED,
      MD
     
@@ -140,7 +141,7 @@ void Process_Command(unsigned char *buffer)
              
            
              
-             transfer_state = READY_FOR_IMG_PIXELS;
+             transfer_state = SET_DATA_POINT;
          
            
             
@@ -155,12 +156,12 @@ void Processing_Data(unsigned char Data[], uint8_t byte_control)
     uint8_t idx=0;
      char String_Buffer[];//Buffer to print char in the display
      
-     if(transfer_state == READY_FOR_IMG_PIXELS)
+     if(transfer_state == SET_DATA_POINT)
      {
          
               
-                      Set_Display_Cursor(0, 0, 63, 91); 
-                        transfer_state = SUSPENDED;
+                      Set_Display_Cursor(0, 0, (Control_Image.width-1), (Control_Image.height-1)); 
+                        transfer_state = READY_FOR_IMG_PIXELS;
            
            
           
@@ -170,7 +171,7 @@ void Processing_Data(unsigned char Data[], uint8_t byte_control)
           
          
      }
-     if(transfer_state == SUSPENDED && byte_control==64)
+     if(transfer_state == READY_FOR_IMG_PIXELS && byte_control==64)
       {
         
          
