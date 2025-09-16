@@ -5,6 +5,8 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtCore import QTimer
 from PIL import Image
+import time
+from image import *
 from Serial_server import *
 import numpy as np
 import threading
@@ -40,8 +42,13 @@ class Program(QtWidgets.QMainWindow):
         self.tiempo2.timeout.connect(self.Process_Serial_data)
         #___________________________________________________
 
+        #Variables para el control de hilos
         self.thread_control = None
         self.Run_thread = False
+
+        #variable para guardar los metadatos de las imagenes en forma de diccionario
+        self.Image_metadata = None
+        self.Image_metadata_array = []
 
         """
         Configuracion de los WidGets ComboBox
@@ -60,6 +67,8 @@ class Program(QtWidgets.QMainWindow):
             "230400",
             "460800"
         ]
+
+        self.ui.Serial_Informmation.setText("Connection state : Disconnect ")
 
         self.ui.ComboBox_BaudRate.addItems(baudrates)
 
@@ -83,6 +92,7 @@ class Program(QtWidgets.QMainWindow):
         self.ui.Import_Image_button.clicked.connect(self.Import_Images)
         #Boton para procesar datos de las matrices de las imagenes
         self.ui.ProcessImg_button.clicked.connect(lambda: self.Pixel_Converter(self.Image_Array))
+        self.ui.Send_Image.clicked.connect(lambda: self.Send_image())
 
         #Connect Serial button with the function to connect with the hardware
         self.ui.Connect_Serial.clicked.connect(
@@ -117,9 +127,11 @@ class Program(QtWidgets.QMainWindow):
             "Select Files",
             r"C:/images/",
             "Images (*.png *.jpg)")
-        if filenames:
+        if filenames:#Si hay archivos elegidos por el usuario
             for i in range(0, len(filenames)):
                 self.images.append(QPixmap(filenames[i]))
+
+            #Se crea un diccionario con los Labels de la interfaz.
             label_mapping = {
                 0: self.ui.Image1_Label,
                 1: self.ui.Image2_Label,
@@ -128,6 +140,9 @@ class Program(QtWidgets.QMainWindow):
                 4: self.ui.Image5_Label,
                 5: self.ui.Image6_Label,
             }
+
+            #Se itera en la lista de imagenes y se ponen los respectivos indices
+            #en los labels
             for idx, image in enumerate(self.images):
                 if idx in label_mapping:
                     label_mapping[idx].setPixmap(image)
@@ -137,66 +152,74 @@ class Program(QtWidgets.QMainWindow):
                 self.Image_Array.append(np.array(image))
             print(len(self.Image_Array))
 
-            """
-            mi_image = QPixmap(filenames[0])
-            self.ui.Image1_Label.setScaledContents(True)
-            self.ui.Image1_Label.setPixmap(mi_image)
-            image = Image.open(filenames[0])
-            pixeles = np.array(image)
-            self.Pixel_Converter(pixeles)
-            
-            
-            
-         
-            print(len(self.images))
-
-   
-              Fin funcion importar imagenes
-
-              """
-
-
-
+    # ______________________________________________________________________
 
     """
         Funcion para convertir los pixeles de color en formato de 16bits
         aun se pueden observar perdidas de color en la conversion
         la funcion guarda los valores de 16bits por pixel en la matrix
         Image_matrix, el codigo aun se encuentra en pruebas.
+        
+         Parametros :
+
+               Pixels contiene la lista de array numpy de cada una de las 
+               imagenes
+
 
         """
 
     def Pixel_Converter(self, Pixels):
-        for i in range(0, len(Pixels)):
-            alto, ancho, _ = Pixels[i].shape
-            print(alto, ancho)
 
-        """
-        print(alto)
-        print(ancho)
-        for j in range(0, ancho):
-            for i in range(0, alto):
-                Red = int(Pixels[i, j, 0])
-                Green = int(Pixels[i, j, 1])
-                Blue = int(Pixels[i, j, 2])
-                r_5_bits = (Red >> 3) & 0x1F
-                g_6_bits = (Green >> 2) & 0x3F
-                b_5_bits = (Blue >> 3) & 0x1F
+        #Diccionario para guardar los metadatos de las imagenes y avisar al hardware
+        self.Image_metadata = {"width" : 0, "height" : 0, "size" : 0}
 
-               # print(Red, Green, Blue)
-              #  print("Red {} Green {}  Blue {}".format(r_5_bits, g_6_bits, b_5_bits))
-              #  print("Red {} Green {}  Blue {}".format(bin(r_5_bits), bin(g_6_bits), bin(b_5_bits)))
-                Final_value = (r_5_bits << 11) | (g_6_bits << 5) | b_5_bits
-                self.Image_matrix.append(Final_value)
-      #  print(self.Image_matrix)
-        print("Imagen Procesada")
-    """
+        if len(Pixels)!=0:#Si pixels realmente contiene imagenes
+            """
+            
+            Se itera en el numero de imagenes en en la variable array Pixels
+            se obtione los metadatos de cada imagen
+            ancho, alto y produndida
+    
+            """
+            for t in range(0, len(Pixels)):
+                alto, ancho, _ = Pixels[t].shape
+                self.Image_metadata["width"] = ancho
+                self.Image_metadata["height"] = alto
+                self.Image_metadata["size"] = int((alto * ancho)/256)
+                self.Image_metadata_array.append(self.Image_metadata)
+                current_img = Pixels[t]
+                """
+                se itera en cada uno de los pixeles y se convierte en 
+                formato de color de 16bits R5G6B5
+                """
+                for j in range(0, ancho):
+                    for i in range(0, alto):
+                        Red = int(current_img[i, j, 0])
+                        Green = int(current_img[i, j, 1])
+                        Blue = int(current_img[i, j, 2])
+                        r_5_bits = (Red >> 3) & 0x1F
+                        g_6_bits = (Green >> 2) & 0x3F
+                        b_5_bits = (Blue >> 3) & 0x1F
+                        Final_value = (r_5_bits << 11) | (g_6_bits << 5) | b_5_bits
+
+                        self.Image_matrix.append(Final_value)
+                print(self.Image_matrix)
+
+
+        else:
+            print("se debe avisar en la interfaz que no hay imagenes para procesar")
+
+
+
+
+
 
     """
                 Fin del metodo conversion de pixeles
 
                 """
 
+#______________________________________________________________________
 
     """
            Funcion para conectar el puerto Serial
@@ -211,10 +234,18 @@ class Program(QtWidgets.QMainWindow):
            """
 
     def Connect_Serial(self, port, baudrate):
+        #Se conecta al puerto serial, si la conexion no es Ok
+        #Se menciona en la interfaz
         #print("Puerto {}   Baudrate {}".format(port, baudrate))
         self.Serial_data = Serial_data(port, baudrate)
         Port_State, self.Serial_state = self.Serial_data.Connect_Port()
         self.ui.Serial_Informmation.setText("Port {},  {}".format(port, Port_State))
+
+
+        """
+        Si el puerto serial esta conectado se inicia el hilo para la recepsion sin 
+        perdida de datos 
+        """
         if(self.Serial_state):
             self.Run_thread = True
             self.thread_control = threading.Thread(target=self.Thread_data_control)
@@ -253,9 +284,20 @@ class Program(QtWidgets.QMainWindow):
 
 
     def Send_image(self):
+        if(self.Image_metadata and self.Serial_state):#Si hay metadatos elegidos y el puerto esta conectado
+            a = 'pimg'.encode('utf_8')#Se envia el comando Pimg para poner imagenes
+            self.Serial_data.Serial_port.write(a)
+            print("hola mundo")
+
+        else:
+            return
+
+
+
+
+
+        """
         Buffer_Data = []
-        n = 0
-        m = 64
         for j in range(0, len(self.Image_matrix)):
             decimal = (self.Image_matrix[j])
             print(decimal)
@@ -274,14 +316,14 @@ class Program(QtWidgets.QMainWindow):
             self.Serial_data.Serial_port.write(x)
             n = n + 64
             m = m + 64
-
+"""
 
     def Send_test_data(self):
-        a = 'pig'.encode('utf_8')
-        if (self.Serial_state):
-            self.Serial_data.Serial_port.write(a)
+        a = 'Test'.encode('utf_8')
+        self.Serial_data.Serial_port.write(a)
         # Put Image Command
-        """
+
+        """"
         Buffer_Data = []
         n = 0
         m = 64
@@ -307,12 +349,64 @@ class Program(QtWidgets.QMainWindow):
     def Process_Serial_data(self):
         if (self.Serial_state):
             if(self.data):
-                self.ui.Serial_Informmation.setText(str(self.data[0]))
-                if (self.data[0] == 'Ok'):
-                    print("Hola")
-                    a = '064-123-423'.encode('utf_8')
+
+                if (self.data and self.data[0] == 'Ok'):
+                    #Si el hardware responde Ok despues de enviar el comando
+                    #pimg el software responde con el numero de imagenes a enviar
+                    self.ui.Serial_Informmation.setText(str(self.data[0]))
+                    b = "064-092-023"
+                    a = b.encode('utf_8')  # Put Image Command
                     self.Serial_data.Serial_port.write(a)
                     self.data = None
+                    print(a)
+
+                elif(self.data and self.data[0] == 'wait'):
+                    self.data = None
+                    for i in range(0, 1):
+                        print(self.Image_metadata_array[i]["width"])
+
+                        metada = ("0" + str(self.Image_metadata_array[i]["width"]) + "-" +
+                                  "0" + str(self.Image_metadata_array[i]["height"]) + "-" +
+                                  "0" + str(self.Image_metadata_array[i]["size"]))
+
+                        print(metada)
+                        a =  metada.encode('utf_8')
+
+                        self.Serial_data.Serial_port.write(a)
+
+
+
+
+
+                elif(self.data and self.data[0] == "Ready"):
+                    self.ui.Serial_Informmation.setText(str(self.data[0]))
+                    print("Docito")
+
+                    Buffer_Data = []
+                    n = 0
+                    m = 64
+                    for j in range(0, len(img3)):
+                        decimal = img3[j]
+                        # Se separan los bytes del color al ser de 16bit
+                        # se saca la parte alta y la parte baja
+                        high_byte = int(decimal >> 8)
+                        low_byte = int(decimal & 255)
+
+                        # Se agregan los datos al buffer
+                        Buffer_Data.append(high_byte)
+                        Buffer_Data.append(low_byte)
+
+                    for k in range(0, 184):
+                        x = Buffer_Data[n:m]
+                        self.Serial_data.Serial_port.write(x)
+                        n = n + 64
+                        m = m + 64
+
+
+                elif(self.data and self.data[0] == "Okt"):
+                    self.ui.Serial_Informmation.setText("Test Port State : Ok")
+                    a = 'cr'.encode('utf_8')
+                    self.Serial_data.Serial_port.write(a)
 
 
     def Memory_commands(self, command):
