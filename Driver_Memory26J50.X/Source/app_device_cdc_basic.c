@@ -31,11 +31,11 @@ please contact mla_licensing@microchip.com
 #include "usb_config.h"
 
 /** VARIABLES ******************************************************/
-
+static  unsigned char readBuffer[CDC_DATA_OUT_EP_SIZE];
+static uint8_t writeBuffer[CDC_DATA_IN_EP_SIZE];
 static bool buttonPressed;
 static char buttonMessage[] = "Button pressed.\r\n";
-static uint8_t readBuffer[CDC_DATA_OUT_EP_SIZE];
-static uint8_t writeBuffer[CDC_DATA_IN_EP_SIZE];
+
 
 /*********************************************************************
 * Function: void APP_DeviceCDCBasicDemoInitialize(void);

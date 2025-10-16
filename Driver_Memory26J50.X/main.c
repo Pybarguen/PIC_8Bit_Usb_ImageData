@@ -18,14 +18,142 @@ please contact mla_licensing@microchip.com
 *******************************************************************************/
 
 /** INCLUDES *******************************************************/
-#include "system.h"
+#include <system.h>
+#include <Spi_Interface.h>
+#include <Fonts.h>
+#include <ST7735.h>
 
 #include "app_device_cdc_basic.h"
 #include "app_led_usb_status.h"
 
+
 #include "usb.h"
 #include "usb_device.h"
 #include "usb_device_cdc.h"
+
+#include <usb_data_process.h>
+unsigned char readBuffer[CDC_DATA_OUT_EP_SIZE];
+uint8_t writeBuffer[CDC_DATA_IN_EP_SIZE];
+char memory_buffer[256];
+
+uint8_t i;
+uint8_t numBytesRead;
+uint8_t control_page =0;
+uint8_t numImgs = 0;
+int testi=0;
+int date =0;
+char dataprint[10];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    void Get_USB_Data()
+{
+    /* If the USB device isn't configured yet, we can't really do anything
+     * else since we don't have a host to talk to.  So jump back to the
+     * top of the while loop. */
+    if( USBGetDeviceState() < CONFIGURED_STATE )
+    {
+        return;
+    }
+
+    /* If we are currently suspended, then we need to see if we need to
+     * issue a remote wakeup.  In either case, we shouldn't process any
+     * keyboard commands since we aren't currently communicating to the host
+     * thus just continue back to the start of the while loop. */
+    if( USBIsDeviceSuspended()== true )
+    {
+        return;
+    }
+        
+    
+    if( USBUSARTIsTxTrfReady() == true)
+    {
+       
+        
+
+        numBytesRead = getsUSBUSART(readBuffer, sizeof(readBuffer));
+       if(numBytesRead > 0)
+       {
+        /* For every byte that was read... */
+//        for(i=0; i<numBytesRead; i++)
+//        {
+//            switch(readBuffer[i])
+//            {
+//                /* If we receive new line or line feed commands, just echo
+//                 * them direct.
+//                 */
+//                case 0x0A:
+//                case 0x0D:    
+//                        
+//                    
+//                    
+//                    
+//                    
+//                    
+//                    
+//                    break;
+//
+//                /* If we receive something else, then echo it plus one
+//                 * so that if we receive 'a', we echo 'b' so that the
+//                 * user knows that it isn't the echo enabled on their
+//                 * terminal program.
+//                 */
+//                default:
+//                   //writeBuffer[i] = readBuffer[i];
+//                    break;
+//            }
+//        }
+        
+        Processing_Data(readBuffer, numBytesRead );
+       }
+        
+//        if(numBytesRead > 0)
+//        {
+//            /* After processing all of the received data, we need to send out
+//             * the "echo" data now.
+//             */
+//            ;;
+//           // putUSBUSART(writeBuffer,numBytesRead);
+//        }
+    
+    }
+      
+    CDCTxService();
+    
+}
+
+                
+                    
+                    
+            
+            
+              
+    
+    
+   
+    
+
+
+
 
 /********************************************************************
  * Function:        void main(void)
@@ -54,6 +182,32 @@ OSCCONbits.SCS = 0b10;      // Internal oscillator block
     USBDeviceInit();
     USBDeviceAttach();
     
+        Control_Image.width =0;
+Control_Image.height =0;
+Control_Image.size =0;
+    
+      //SPI
+   Spi_init();//start spi interface
+   Spi_mode(CPOL_1_CPHA_0);//SPI mode 0 0 
+   Spi_clock_mode(SPI_MASTER_CLOCK_DIV_4);//SPI clock = FOSC/4 
+   TRISCbits.TRISC2 = 0;
+   TRISCbits.TRISC1 = 0;
+   TRISBbits.TRISB4 = 0;
+   TRISCbits.TRISC0 = 1;
+     
+   ANCON0  = 0xFF;//All analog Pins are Digital NOW  
+
+    CCS_ST7735 = 1;
+    DCs = 0;
+       
+   //TFT DISPLAY INIT
+    ST7735S_Init(ST7735_128_x_160);
+     ST7735S_Fill_display(Purple_Color);
+     
+     CCS_ST7735 = 1;
+   __delay_ms(10);
+  
+    
     while(1)
     {
         SYSTEM_Tasks();
@@ -75,7 +229,8 @@ OSCCONbits.SCS = 0b10;      // Internal oscillator block
         #endif
 
         //Application specific tasks
-        APP_DeviceCDCBasicDemoTasks();
+            Get_USB_Data();
+       
 
     }//end while
 }//end main
