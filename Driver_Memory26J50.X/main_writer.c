@@ -32,10 +32,11 @@ please contact mla_licensing@microchip.com
 #include "usb_device_cdc.h"
 
 #include <usb_data_process.h>
+#include "25Q16VJ_Flash_Memory.h"
 unsigned char readBuffer[CDC_DATA_OUT_EP_SIZE];
 uint8_t writeBuffer[CDC_DATA_IN_EP_SIZE];
 char memory_buffer[256];
-
+char String_Buffer[12];
 uint8_t i;
 uint8_t numBytesRead;
 uint8_t control_page =0;
@@ -190,14 +191,20 @@ Control_Image.size =0;
    Spi_init();//start spi interface
    Spi_mode(CPOL_1_CPHA_0);//SPI mode 0 0 
    Spi_clock_mode(SPI_MASTER_CLOCK_DIV_4);//SPI clock = FOSC/4 
-   TRISCbits.TRISC2 = 0;
+  TRISCbits.TRISC2 = 0;
    TRISCbits.TRISC1 = 0;
+   TRISCbits.TRISC6 = 0;
    TRISBbits.TRISB4 = 0;
-   TRISCbits.TRISC0 = 1;
      
    ANCON0  = 0xFF;//All analog Pins are Digital NOW  
+   
+     
+   
+   AddressMemory.address = 0x000000;
+    MemoryID test;
 
     CCS_ST7735 = 1;
+    CCS_Memory = 1;
     DCs = 0;
        
    //TFT DISPLAY INIT
@@ -206,7 +213,23 @@ Control_Image.size =0;
      
      CCS_ST7735 = 1;
    __delay_ms(10);
-  
+
+    
+    
+    
+    
+    
+    
+    
+   Read_Device_ID(&test);
+    
+    sprintf(String_Buffer, "0x%02X", test.manufacturer);    
+    ST7735S_Print_String(Blue_Color, String_Buffer, 0, 0, 2);
+    Block_Erase_64KB(AddressMemory);
+    __delay_ms(900);
+    ST7735S_Fill_display(White_Color);
+    
+
     
     while(1)
     {

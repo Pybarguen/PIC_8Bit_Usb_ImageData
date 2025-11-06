@@ -78,7 +78,7 @@ void SYSTEM_Initialize( SYSTEM_STATE state )
              //Device switches over automatically to PLL output after PLL is locked and ready.
 			 
             LED_Enable(LED_USB_DEVICE_STATE);
-            BUTTON_Enable(BUTTON_DEVICE_CDC_BASIC_DEMO);
+         
             break;
             
         case SYSTEM_STATE_USB_SUSPEND: 

@@ -26,7 +26,7 @@ please contact mla_licensing@microchip.com
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "buttons.h"
+
 #include "leds.h"
 
 #include "io_mapping.h"

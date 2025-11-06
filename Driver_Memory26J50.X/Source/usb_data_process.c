@@ -7,6 +7,10 @@
 
 
 #include <usb_data_process.h>
+#include "25Q16VJ_Flash_Memory.h"
+
+uint8_t control_page=0;
+char memory_buffer[256];
 
 void Process_Command(unsigned char *buffer)
 {
@@ -102,12 +106,34 @@ void Processing_Data(unsigned char Data[], uint8_t byte_control)
     
     
                 
-            for(int rx=0; rx<byte_control; rx++)
+           
+            
+                        if(control_page<4)   
+            {
+                
+            for(uint8_t i=0; i<byte_control; i++)
             {  
-             
+               CCS_ST7735 = 0;
                  __delay_us(1);
-             write_color(readBuffer[rx]);             
+             write_color(readBuffer[i]);             
              
+             memory_buffer[(control_page * 64) + i] = readBuffer[i];
+             
+            }
+            control_page = control_page+1;
+            }
+            if(control_page==4)
+            {
+               CCS_ST7735 = 1;
+                 __delay_ms(1);
+              Write_Page_Program(AddressMemory, PAGE_SIZE, memory_buffer);
+             
+              //  CCS_Memory = 1;
+                 AddressMemory.address += 0x000100;
+                 control_page=0;
+                 
+                
+                 
             }
                  
                 
@@ -205,33 +231,7 @@ void Processing_Data(unsigned char Data[], uint8_t byte_control)
 
         
            
-//            if(control_page<4)   
-//            {
-//                
-//            for(i=0; i<byte_control; i++)
-//            {  
-//             
-//                 __delay_us(1);
-//             write_color(readBuffer[i]);             
-//             
-//             memory_buffer[(control_page * 64) + i] = readBuffer[i];
-//             
-//            }
-//            control_page = control_page+1;
-//            }
-//            if(control_page==4)
-//            {
-//               // CCS_ST7735 = 1;
-//              //   __delay_ms(1);
-//              //  Write_Page_Program(AddressMemory, PAGE_SIZE, memory_buffer);
-//             
-//              //  CCS_Memory = 1;
-//                 AddressMemory.address += 0x000100;
-//                 control_page=0;
-//                 
-//                
-//                 
-//            }
+           
             
             
          //  }

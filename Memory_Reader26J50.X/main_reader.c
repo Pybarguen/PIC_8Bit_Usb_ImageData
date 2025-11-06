@@ -15,7 +15,7 @@
 
 char String_Buffer[12];
     
-
+char memory_buffer[256];
 /********************************************************************
  * Function:        void main(void)
  *
@@ -71,7 +71,32 @@ OSCCONbits.SCS = 0b10;      // Internal oscillator block
     
      sprintf(String_Buffer, "0x%02X", test.manufacturer);    
      ST7735S_Print_String(Blue_Color, String_Buffer, 0, 0, 2);
+     __delay_ms(500);
+     ST7735S_Fill_display(White_Color); 
+     Set_Display_Cursor(0, 0, 63, 91); 
      
+ 
+      
+     for(int mr=0; mr<46; mr++)
+     {
+          CCS_ST7735 = 1;
+           __delay_ms(1);
+         Read_Page(AddressMemory, memory_buffer);
+          CCS_ST7735 = 0;
+           __delay_ms(1);
+          
+     for(int mt=0; mt<256; mt++)
+            {
+           __delay_ms(10);
+             write_color(memory_buffer[mt]);  
+             
+             
+            }
+           
+           
+      AddressMemory.address += 0x000100;
+     
+    }
     
   
     
