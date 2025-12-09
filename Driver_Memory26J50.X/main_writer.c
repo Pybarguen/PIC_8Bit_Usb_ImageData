@@ -225,8 +225,8 @@ Control_Image.size =0;
     
     sprintf(String_Buffer, "0x%02X", test.manufacturer);    
     ST7735S_Print_String(Blue_Color, String_Buffer, 0, 0, 2);
-    Block_Erase_64KB(AddressMemory);
-    __delay_ms(900);
+    Memory_Erase();
+   
     ST7735S_Fill_display(White_Color);
     
 

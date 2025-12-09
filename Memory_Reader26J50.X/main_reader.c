@@ -37,7 +37,8 @@ MAIN_RETURN main(void)
 OSCCONbits.IRCF = 0b111;    // 8 MHz internal oscillator
 OSCCONbits.SCS = 0b10;      // Internal oscillator block
  OSCTUNEbits.PLLEN = 1;//ON Internal OScilator
-
+  AddressBytes AddressMemoryIMG1;
+  AddressBytes AddressMemoryIMG2;
      
     
       //SPI
@@ -49,7 +50,8 @@ OSCCONbits.SCS = 0b10;      // Internal oscillator block
    TRISCbits.TRISC6 = 0;
    TRISBbits.TRISB4 = 0;
    
-    AddressMemory.address = 0x000000;
+    AddressMemoryIMG1.address = 0x000000;
+    AddressMemoryIMG2.address = 0x00A000;
     MemoryID test;
 
      
@@ -73,28 +75,62 @@ OSCCONbits.SCS = 0b10;      // Internal oscillator block
      ST7735S_Print_String(Blue_Color, String_Buffer, 0, 0, 2);
      __delay_ms(500);
      ST7735S_Fill_display(White_Color); 
-     Set_Display_Cursor(0, 0, 63, 91); 
+     Set_Display_Cursor(0, 0, 127, 159); 
      
  
       
-     for(int mr=0; mr<46; mr++)
+     for(int mr=0; mr<160; mr++)
      {
           CCS_ST7735 = 1;
            __delay_ms(1);
-         Read_Page(AddressMemory, memory_buffer);
+         Read_Page(AddressMemoryIMG1, memory_buffer);
           CCS_ST7735 = 0;
            __delay_ms(1);
           
      for(int mt=0; mt<256; mt++)
             {
-           __delay_ms(10);
+       
              write_color(memory_buffer[mt]);  
              
              
             }
            
            
-      AddressMemory.address += 0x000100;
+      AddressMemoryIMG1.address += 0x000100;
+     
+    }
+     
+       __delay_ms(2000);
+       
+   
+  
+     
+     CCS_ST7735 = 1;
+   __delay_ms(10);
+
+   
+     ST7735S_Fill_display(White_Color); 
+     Set_Display_Cursor(0, 0, 127, 159); 
+        __delay_ms(1000);
+     
+     for(int mr=0; mr<160; mr++)
+     {
+          CCS_ST7735 = 1;
+           __delay_ms(1);
+         Read_Page(AddressMemoryIMG2, memory_buffer);
+          CCS_ST7735 = 0;
+           __delay_ms(1);
+          
+     for(int mt=0; mt<256; mt++)
+            {
+       
+             write_color(memory_buffer[mt]);  
+             
+             
+            }
+           
+           
+      AddressMemoryIMG2.address += 0x000100;
      
     }
     

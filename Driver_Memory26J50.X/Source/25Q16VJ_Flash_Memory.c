@@ -184,6 +184,24 @@ void Block_Erase_64KB(AddressBytes AddressMemory)
     
 }
 
+void Memory_Erase()
+
+{
+    
+       CCS_Memory = 0;
+    write_command(Write_enable);//0x06 command
+    CCS_Memory = 1;
+     
+    __delay_us(1);
+     CCS_Memory = 0;
+     write_command(Chip_Erase);
+      CCS_Memory = 1;
+    Memory_state();
+
+    
+    
+}
+
 void set_page(AddressBytes AddressMemory)
 
 {

@@ -85,7 +85,7 @@ typedef union {
    };
 }AddressBytes;
 
-AddressBytes AddressMemory;
+
 /**
  * Funtion Read_Device_ID(MemoryID *id)
  * @brief Read Memory Flash ID

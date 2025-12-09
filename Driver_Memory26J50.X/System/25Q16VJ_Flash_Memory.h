@@ -141,5 +141,8 @@ void set_page(AddressBytes AddressMemory);
 
 void write_memory_data(uint8_t data);
 
+
+void Memory_Erase();
+
 #endif	/* XC_HEADER_TEMPLATE_H */
 
